@@ -23,6 +23,10 @@ interface SettingsFormProps {
   disabled: boolean;
 }
 
+const safeChange = (fn: (v: string) => void) => (v: string | null) => {
+  if (v !== null) fn(v);
+};
+
 const VOICE_OPTIONS: Record<string, { label: string; value: string }[]> = {
   "edge-tts": [
     { label: "Nanami（女性・落ち着き）", value: "ja-JP-NanamiNeural" },
@@ -57,7 +61,7 @@ export function SettingsForm({
 
       <div className="space-y-2">
         <Label>AI プロバイダー</Label>
-        <Select value={aiProvider} onValueChange={onAiProviderChange} disabled={disabled}>
+        <Select value={aiProvider} onValueChange={safeChange(onAiProviderChange)} disabled={disabled}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
@@ -103,11 +107,11 @@ export function SettingsForm({
         <Label>音声合成エンジン</Label>
         <Select
           value={ttsProvider}
-          onValueChange={(v) => {
+          onValueChange={safeChange((v) => {
             onTtsProviderChange(v);
             const defaultVoice = VOICE_OPTIONS[v]?.[0]?.value;
             if (defaultVoice) onVoiceChange(defaultVoice);
-          }}
+          })}
           disabled={disabled}
         >
           <SelectTrigger>
@@ -122,7 +126,7 @@ export function SettingsForm({
 
       <div className="space-y-2">
         <Label>話者</Label>
-        <Select value={voice} onValueChange={onVoiceChange} disabled={disabled}>
+        <Select value={voice} onValueChange={safeChange(onVoiceChange)} disabled={disabled}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>

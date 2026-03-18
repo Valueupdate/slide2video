@@ -28,7 +28,7 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const abortRef = useRef<AbortController | null>(null);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
   const addLog = useCallback((step: string, message: string) => {
     setLogs((prev) => [...prev, { step, message, timestamp: new Date() }]);
@@ -72,6 +72,7 @@ export default function Home() {
         headers: {
           "X-AI-Provider": aiProvider,
           "X-API-Key": apiKey,
+          "ngrok-skip-browser-warning": "true",
         },
         body: formData,
       });
@@ -91,6 +92,9 @@ export default function Home() {
 
       const eventRes = await fetch(`${API_URL}/progress/${currentJobId}`, {
         signal: abort.signal,
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+        },
       });
 
       if (!eventRes.ok || !eventRes.body) {

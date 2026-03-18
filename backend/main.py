@@ -12,6 +12,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, UploadFile, File, Header, Form, HTTPException, BackgroundTasks
 from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from typing import Optional
 
 from config import (
@@ -46,7 +47,7 @@ app = FastAPI(title="Slide2Video API", version=APP_VERSION, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "http://localhost:3000"],
+    allow_origins=[FRONTEND_URL, "http://localhost:3000", "https://decrescent-patrick-patriarchical.ngrok-free.dev"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -210,3 +211,14 @@ async def download(job_id: str):
         media_type="video/mp4",
         filename=f"slide2video_{job_id}.mp4",
     )
+
+
+# ─── フロントエンド静的ファイル配信 ───────────────────
+# APIエンドポイントより後にマウントすることで、APIが優先される
+import pathlib
+FRONTEND_OUT = pathlib.Path(__file__).resolve().parent.parent / "frontend" / "out"
+if FRONTEND_OUT.exists():
+    app.mount("/", StaticFiles(directory=str(FRONTEND_OUT), html=True), name="frontend")
+    print(f"[Main] Frontend mounted from: {FRONTEND_OUT}")
+else:
+    print(f"[Main] Frontend not found at: {FRONTEND_OUT}")
