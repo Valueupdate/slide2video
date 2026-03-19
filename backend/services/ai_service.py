@@ -11,7 +11,7 @@ import asyncio
 import time
 from typing import List, Dict, Any, Optional, Callable, Awaitable
 
-from config import GEMINI_MODEL, OPENAI_MODEL
+from config import GEMINI_MODEL, OPENAI_MODEL, OPENROUTER_MODEL, OPENROUTER_BASE_URL
 
 
 SCRIPT_PROMPT_TEMPLATE = """あなたはプロのプレゼンターです。
@@ -33,6 +33,7 @@ async def generate_scripts(
     ai_provider: str,
     api_key: str,
     progress_callback: Optional[Callable[[int, str], Awaitable[None]]] = None,
+    ai_model: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """
     全ページの台本を生成する。
@@ -60,6 +61,9 @@ async def generate_scripts(
             script = await _generate_with_gemini(prompt, page["image_path"], api_key)
         elif ai_provider == "openai":
             script = await _generate_with_openai(prompt, page["image_path"], api_key)
+        elif ai_provider == "openrouter":
+            model = ai_model or OPENROUTER_MODEL
+            script = await _generate_with_openrouter(prompt, page["image_path"], api_key, model)
         else:
             raise ValueError(f"未対応のAIプロバイダ: {ai_provider}")
 
@@ -174,3 +178,55 @@ async def _generate_with_openai(prompt: str, image_path: str, api_key: str) -> s
                 retry_delay *= 1.5
                 continue
             raise Exception(f"OpenAI API エラー: {err_str}")
+
+
+async def _generate_with_openrouter(prompt: str, image_path: str, api_key: str, model: str = OPENROUTER_MODEL) -> str:
+    """OpenRouter APIで台本を生成する（OpenAI互換）"""
+    import base64
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key=api_key,
+        base_url=OPENROUTER_BASE_URL,
+    )
+
+    messages_content = [{"type": "text", "text": prompt}]
+
+    if image_path and os.path.exists(image_path):
+        try:
+            with open(image_path, "rb") as f:
+                b64 = base64.b64encode(f.read()).decode("utf-8")
+            messages_content.append({
+                "type": "image_url",
+                "image_url": {"url": f"data:image/png;base64,{b64}"},
+            })
+        except Exception as e:
+            print(f"[AIService] Failed to load image for OpenRouter: {e}")
+
+    max_retries = 3
+    retry_delay = 10.0
+
+    for attempt in range(max_retries):
+        try:
+            response = await asyncio.to_thread(
+                lambda: client.chat.completions.create(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": "あなたはプロの台本ライターです。指示に従い、台本テキストのみを出力してください。"},
+                        {"role": "user", "content": messages_content},
+                    ],
+                    max_tokens=2500,
+                    temperature=0.7,
+                )
+            )
+            return response.choices[0].message.content.strip()
+
+        except Exception as e:
+            err_str = str(e)
+            is_rate_limit = "429" in err_str or "rate_limit" in err_str.lower()
+            if is_rate_limit and attempt < max_retries - 1:
+                print(f"[AIService] OpenRouter 429, waiting {retry_delay}s... (attempt {attempt + 1})")
+                await asyncio.sleep(retry_delay)
+                retry_delay *= 1.5
+                continue
+            raise Exception(f"OpenRouter API エラー: {err_str}")

@@ -60,6 +60,7 @@ async def run_generation(
     pdf_path: str,
     ai_provider: str,
     api_key: str,
+    ai_model: Optional[str],
     tts_provider: str,
     voice: str,
 ):
@@ -74,7 +75,7 @@ async def run_generation(
         async def script_progress(pct, msg):
             await job.update("script_gen", pct, msg)
 
-        pages = await generate_scripts(pages, ai_provider, api_key, script_progress)
+        pages = await generate_scripts(pages, ai_provider, api_key, script_progress, ai_model=ai_model)
         await job.update("script_gen", 50, "全スライドの台本生成完了")
 
         # 3. 音声合成
@@ -130,6 +131,7 @@ async def generate(
     tts_provider: str = Form(DEFAULT_TTS_PROVIDER),
     x_ai_provider: Optional[str] = Header(None),
     x_api_key: Optional[str] = Header(None),
+    x_ai_model: Optional[str] = Header(None),
 ):
     """動画生成のメインエンドポイント"""
 
@@ -137,8 +139,8 @@ async def generate(
     if not file.filename or not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="PDFファイルのみアップロード可能です")
 
-    if not x_ai_provider or x_ai_provider not in ("gemini", "openai"):
-        raise HTTPException(status_code=422, detail="X-AI-Provider ヘッダーに gemini または openai を指定してください")
+    if not x_ai_provider or x_ai_provider not in ("gemini", "openai", "openrouter"):
+        raise HTTPException(status_code=422, detail="X-AI-Provider ヘッダーに gemini, openai, または openrouter を指定してください")
 
     if not x_api_key:
         raise HTTPException(status_code=422, detail="X-API-Key ヘッダーにAPIキーを指定してください")
@@ -163,6 +165,7 @@ async def generate(
         pdf_path=pdf_path,
         ai_provider=x_ai_provider,
         api_key=x_api_key,
+        ai_model=x_ai_model,
         tts_provider=tts_provider,
         voice=voice,
     )

@@ -38,3 +38,5 @@ DEFAULT_TTS_PROVIDER = "edge-tts"
 # ─── AI デフォルト設定 ───────────────────────────────
 GEMINI_MODEL = "models/gemini-2.5-flash"
 OPENAI_MODEL = "gpt-4o"
+OPENROUTER_MODEL = "google/gemini-2.5-flash"
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"

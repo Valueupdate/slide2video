@@ -20,6 +20,7 @@ export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [aiProvider, setAiProvider] = useState<string>("gemini");
   const [apiKey, setApiKey] = useState<string>("");
+  const [aiModel, setAiModel] = useState<string>("google/gemini-2.5-flash");
   const [ttsProvider, setTtsProvider] = useState<string>("edge-tts");
   const [voice, setVoice] = useState<string>("ja-JP-NanamiNeural");
   const [progress, setProgress] = useState<number>(0);
@@ -185,6 +186,8 @@ export default function Home() {
         <SettingsForm
           aiProvider={aiProvider}
           onAiProviderChange={setAiProvider}
+          aiModel={aiModel}
+          onAiModelChange={setAiModel}
           apiKey={apiKey}
           onApiKeyChange={setApiKey}
           ttsProvider={ttsProvider}
