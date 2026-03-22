@@ -1,4 +1,4 @@
-# 一時ファイル・生成物
+# Temporary files
 backend/temp/
 *.pdf
 *.mp4
@@ -8,11 +8,13 @@ backend/temp/
 *.png
 *.webp
 
-# 環境変数
+# Environment variables
 .env
 .env.local
+frontend/.env.local
 
 # Python
+backend/venv/
 __pycache__/
 *.pyc
 *.pyo
@@ -27,3 +29,10 @@ frontend/.next/
 # OS
 .DS_Store
 Thumbs.db
+
+# Test data
+testdata/
+
+# Editor temp files
+*.crswap
+*.swp
