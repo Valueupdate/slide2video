@@ -31,6 +31,17 @@ MAX_PDF_SIZE_BYTES = MAX_PDF_SIZE_MB * 1024 * 1024
 JOB_EXPIRY_MINUTES = 30
 JOB_CLEANUP_INTERVAL_SECONDS = 60
 
+# ─── 動画設定 ────────────────────────────────────────
+DEFAULT_SLIDE_DURATION = 0  # 0 = 自動（音声長に合わせる）
+DEFAULT_ASPECT_RATIO = "16:9"  # "16:9", "9:16", "1:1"
+
+# アスペクト比ごとの解像度
+ASPECT_RATIO_RESOLUTIONS = {
+    "16:9": (1920, 1080),
+    "9:16": (1080, 1920),
+    "1:1": (1080, 1080),
+}
+
 # ─── Edge-TTS デフォルト設定 ─────────────────────────
 DEFAULT_VOICE = "ja-JP-NanamiNeural"
 DEFAULT_TTS_PROVIDER = "edge-tts"

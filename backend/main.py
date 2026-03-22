@@ -9,7 +9,7 @@ import json
 import asyncio
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, UploadFile, File, Header, Form, HTTPException, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, Header, Form, Query, HTTPException, BackgroundTasks
 from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -18,12 +18,14 @@ from typing import Optional
 from config import (
     APP_VERSION, TEMP_DIR, FRONTEND_URL, MAX_PDF_SIZE_BYTES,
     JOB_CLEANUP_INTERVAL_SECONDS, DEFAULT_VOICE, DEFAULT_TTS_PROVIDER,
+    DEFAULT_SLIDE_DURATION, DEFAULT_ASPECT_RATIO, ASPECT_RATIO_RESOLUTIONS,
 )
 from services.job_manager import job_manager, Job
 from services.pdf_service import parse_pdf
 from services.ai_service import generate_scripts
 from services.tts_service import generate_audio
 from services.video_service import generate_video
+from services.voice_clone import create_voice as create_clone_voice
 
 
 # ─── 定期クリーンアップタスク ─────────────────────────
@@ -63,6 +65,10 @@ async def run_generation(
     ai_model: Optional[str],
     tts_provider: str,
     voice: str,
+    slide_duration: int,
+    aspect_ratio: str,
+    dashscope_api_key: Optional[str] = None,
+    voice_sample_path: Optional[str] = None,
 ):
     """バックグラウンドで動画生成パイプラインを実行する"""
     try:
@@ -75,13 +81,31 @@ async def run_generation(
         async def script_progress(pct, msg):
             await job.update("script_gen", pct, msg)
 
-        pages = await generate_scripts(pages, ai_provider, api_key, script_progress, ai_model=ai_model)
+        pages = await generate_scripts(
+            pages, ai_provider, api_key, script_progress,
+            ai_model=ai_model, target_duration=slide_duration,
+        )
         await job.update("script_gen", 50, "全スライドの台本生成完了")
 
-        # 3. 音声合成
+        # 3. ボイスクローン（qwen-clone 選択時のみ）
+        clone_voice_id = None
+        if tts_provider == "qwen-clone":
+            if not dashscope_api_key:
+                raise Exception("ボイスクローンには DashScope API キーが必要です")
+            if not voice_sample_path or not os.path.exists(voice_sample_path):
+                raise Exception("ボイスクローンには音声サンプルファイルが必要です")
+
+            await job.update("voice_clone", 52, "ボイスクローン作成中（音声サンプルを解析しています）...")
+            clone_voice_id = await create_clone_voice(
+                audio_path=voice_sample_path,
+                api_key=dashscope_api_key,
+            )
+            await job.update("voice_clone", 55, f"ボイスクローン作成完了（ID: {clone_voice_id[:16]}...）")
+
+        # 4. 音声合成
         total = len(pages)
         for i, page in enumerate(pages):
-            pct = 50 + int((i / total) * 30)
+            pct = 55 + int((i / total) * 25) if tts_provider == "qwen-clone" else 50 + int((i / total) * 30)
             await job.update("tts", pct, f"スライド {page['page_number']}/{total} の音声生成中...")
 
             audio_path = os.path.join(job.work_dir, f"audio_{page['page_number']}.mp3")
@@ -95,18 +119,21 @@ async def run_generation(
                 tts_provider=tts_provider,
                 voice=voice,
                 openai_api_key=openai_key,
+                dashscope_api_key=dashscope_api_key,
+                clone_voice_id=clone_voice_id,
             )
             page["audio_path"] = audio_path
 
         await job.update("tts", 80, "音声生成完了")
 
-        # 4. 動画生成
-        await job.update("video_render", 85, "動画レンダリング中...")
+        # 5. 動画生成
+        resolution = ASPECT_RATIO_RESOLUTIONS.get(aspect_ratio, (1920, 1080))
+        await job.update("video_render", 85, f"動画レンダリング中... ({aspect_ratio})")
         output_path = os.path.join(job.work_dir, f"{job.job_id}.mp4")
-        await generate_video(pages, output_path)
+        await generate_video(pages, output_path, resolution=resolution, min_duration=slide_duration)
         await job.update("video_render", 95, "動画レンダリング完了")
 
-        # 5. 完了
+        # 6. 完了
         download_url = f"/download/{job.job_id}"
         await job.complete(download_url)
 
@@ -129,9 +156,13 @@ async def generate(
     file: UploadFile = File(...),
     voice: str = Form(DEFAULT_VOICE),
     tts_provider: str = Form(DEFAULT_TTS_PROVIDER),
+    slide_duration: int = Form(DEFAULT_SLIDE_DURATION),
+    aspect_ratio: str = Form(DEFAULT_ASPECT_RATIO),
+    voice_sample: Optional[UploadFile] = File(None),
     x_ai_provider: Optional[str] = Header(None),
     x_api_key: Optional[str] = Header(None),
     x_ai_model: Optional[str] = Header(None),
+    x_dashscope_key: Optional[str] = Header(None),
 ):
     """動画生成のメインエンドポイント"""
 
@@ -144,6 +175,22 @@ async def generate(
 
     if not x_api_key:
         raise HTTPException(status_code=422, detail="X-API-Key ヘッダーにAPIキーを指定してください")
+
+    if aspect_ratio not in ASPECT_RATIO_RESOLUTIONS:
+        raise HTTPException(status_code=422, detail=f"aspect_ratio は {', '.join(ASPECT_RATIO_RESOLUTIONS.keys())} のいずれかを指定してください")
+
+    if slide_duration < 0 or slide_duration > 120:
+        raise HTTPException(status_code=422, detail="slide_duration は 0〜120 の範囲で指定してください（0=自動）")
+
+    # ボイスクローンのバリデーション
+    if tts_provider == "qwen-clone":
+        if not x_dashscope_key:
+            raise HTTPException(status_code=422, detail="ボイスクローンには X-DashScope-Key ヘッダーが必要です")
+        if not voice_sample or not voice_sample.filename:
+            raise HTTPException(status_code=422, detail="ボイスクローンには音声サンプルファイルが必要です")
+        allowed_audio_ext = (".wav", ".mp3", ".m4a")
+        if not voice_sample.filename.lower().endswith(allowed_audio_ext):
+            raise HTTPException(status_code=400, detail=f"音声サンプルは {', '.join(allowed_audio_ext)} 形式のみ対応しています")
 
     # ファイルサイズチェック
     content = await file.read()
@@ -158,6 +205,15 @@ async def generate(
     with open(pdf_path, "wb") as f:
         f.write(content)
 
+    # 音声サンプルを一時ファイルに保存（ボイスクローン時）
+    voice_sample_path = None
+    if tts_provider == "qwen-clone" and voice_sample and voice_sample.filename:
+        ext = os.path.splitext(voice_sample.filename)[1].lower()
+        voice_sample_path = os.path.join(job.work_dir, f"voice_sample{ext}")
+        sample_content = await voice_sample.read()
+        with open(voice_sample_path, "wb") as f:
+            f.write(sample_content)
+
     # バックグラウンドで処理開始
     background_tasks.add_task(
         run_generation,
@@ -168,6 +224,10 @@ async def generate(
         ai_model=x_ai_model,
         tts_provider=tts_provider,
         voice=voice,
+        slide_duration=slide_duration,
+        aspect_ratio=aspect_ratio,
+        dashscope_api_key=x_dashscope_key,
+        voice_sample_path=voice_sample_path,
     )
 
     return {

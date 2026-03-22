@@ -22,10 +22,23 @@ SCRIPT_PROMPT_TEMPLATE = """あなたはプロのプレゼンターです。
 （※画像が提供されている場合、テキストが読めなければ画像を優先して内容を把握してください）
 
 制約事項:
-- 1スライドあたり5〜10文程度で、しっかりと内容を説明してください。
+{duration_instruction}
 - 聴衆に語りかけるような自然な表現にしてください。
 - 専門用語があれば簡潔に解説を加えてください。
 - 出力は台本テキストのみを返してください。JSON不要です。余分な前置き・後書き不要です。"""
+
+
+def _build_duration_instruction(target_duration: int) -> str:
+    """目標秒数に応じた台本分量の指示文を生成する"""
+    if target_duration <= 0:
+        return "- 1スライドあたり5〜10文程度で、しっかりと内容を説明してください。"
+
+    chars = target_duration * 6
+    sentences = max(2, target_duration // 6)
+    return (
+        f"- 読み上げ時間が約{target_duration}秒になるよう、{chars}文字前後（{sentences}文程度）で台本を作成してください。\n"
+        f"- 短すぎず長すぎず、{target_duration}秒に収まる分量を厳守してください。"
+    )
 
 
 async def generate_scripts(
@@ -34,15 +47,18 @@ async def generate_scripts(
     api_key: str,
     progress_callback: Optional[Callable[[int, str], Awaitable[None]]] = None,
     ai_model: Optional[str] = None,
+    target_duration: int = 0,
 ) -> List[Dict[str, Any]]:
     """
     全ページの台本を生成する。
 
     Args:
         pages: pdf_service.parse_pdf の戻り値
-        ai_provider: "gemini" or "openai"
+        ai_provider: "gemini" or "openai" or "openrouter"
         api_key: ユーザーのAPIキー
         progress_callback: async def callback(progress_percent, message)
+        ai_model: OpenRouter使用時のモデル名
+        target_duration: 1スライドあたりの目標秒数（0=自動）
 
     Returns:
         各ページに "script" フィールドを追加したリスト
@@ -55,7 +71,15 @@ async def generate_scripts(
             pct = 10 + int((i / total) * 40)
             await progress_callback(pct, f"スライド {page_num}/{total} の台本生成中...")
 
-        prompt = SCRIPT_PROMPT_TEMPLATE.format(slide_text=page["text"] or "(テキストなし — 画像を参照)")
+        # Gemini無料枠のレート制限対策: スライド間にウェイトを入れる
+        if i > 0 and ai_provider == "gemini":
+            await asyncio.sleep(4)
+
+        duration_instruction = _build_duration_instruction(target_duration)
+        prompt = SCRIPT_PROMPT_TEMPLATE.format(
+            slide_text=page["text"] or "(テキストなし — 画像を参照)",
+            duration_instruction=duration_instruction,
+        )
 
         if ai_provider == "gemini":
             script = await _generate_with_gemini(prompt, page["image_path"], api_key)
@@ -82,7 +106,6 @@ async def _generate_with_gemini(prompt: str, image_path: str, api_key: str) -> s
 
     parts = [types.Part.from_text(text=prompt)]
 
-    # 画像を添付
     if image_path and os.path.exists(image_path):
         try:
             with open(image_path, "rb") as f:
@@ -91,8 +114,8 @@ async def _generate_with_gemini(prompt: str, image_path: str, api_key: str) -> s
         except Exception as e:
             print(f"[AIService] Failed to load image for Gemini: {e}")
 
-    max_retries = 3
-    retry_delay = 10.0
+    max_retries = 5
+    retry_delay = 15.0
 
     for attempt in range(max_retries):
         try:
@@ -108,7 +131,6 @@ async def _generate_with_gemini(prompt: str, image_path: str, api_key: str) -> s
             )
             text = (response.text or "").strip()
             if not text:
-                # partsから取得を試みる
                 try:
                     answer_parts = [
                         p.text for p in response.candidates[0].content.parts
@@ -123,9 +145,14 @@ async def _generate_with_gemini(prompt: str, image_path: str, api_key: str) -> s
             err_str = str(e)
             is_rate_limit = "429" in err_str or "RESOURCE_EXHAUSTED" in err_str
             if is_rate_limit and attempt < max_retries - 1:
-                print(f"[AIService] Gemini 429, waiting {retry_delay}s... (attempt {attempt + 1})")
-                await asyncio.sleep(retry_delay)
-                retry_delay *= 1.5
+                # エラーメッセージから推奨待ち時間を抽出
+                wait_time = retry_delay
+                import re as _re
+                retry_match = _re.search(r"retry in ([\d.]+)s", err_str, _re.IGNORECASE)
+                if retry_match:
+                    wait_time = float(retry_match.group(1)) + 2.0  # 余裕を持たせる
+                print(f"[AIService] Gemini 429, waiting {wait_time:.0f}s... (attempt {attempt + 1}/{max_retries})")
+                await asyncio.sleep(wait_time)
                 continue
             raise Exception(f"Gemini API エラー: {err_str}")
 
@@ -139,7 +166,6 @@ async def _generate_with_openai(prompt: str, image_path: str, api_key: str) -> s
 
     messages_content = [{"type": "text", "text": prompt}]
 
-    # 画像を添付
     if image_path and os.path.exists(image_path):
         try:
             with open(image_path, "rb") as f:

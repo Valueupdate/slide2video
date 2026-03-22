@@ -11,6 +11,16 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 
+const DASHSCOPE_KEY_GUIDE = {
+  url: "https://modelstudio.console.alibabacloud.com/?tab=playground#/api-key",
+  label: "Alibaba Cloud Model Studio でキーを作成",
+  steps: [
+    "上のリンクから Alibaba Cloud Model Studio を開く",
+    "Alibaba Cloud アカウントでログイン（無料登録可）",
+    "「Create API Key」をクリックしてコピー",
+  ],
+};
+
 interface SettingsFormProps {
   aiProvider: string;
   onAiProviderChange: (v: string) => void;
@@ -22,12 +32,40 @@ interface SettingsFormProps {
   onTtsProviderChange: (v: string) => void;
   voice: string;
   onVoiceChange: (v: string) => void;
+  slideDuration: number;
+  onSlideDurationChange: (v: number) => void;
+  aspectRatio: string;
+  onAspectRatioChange: (v: string) => void;
+  dashscopeKey: string;
+  onDashscopeKeyChange: (v: string) => void;
+  voiceSample: File | null;
+  onVoiceSampleChange: (v: File | null) => void;
   disabled: boolean;
 }
 
 const safeChange = (fn: (v: string) => void) => (v: string | null) => {
   if (v !== null) fn(v);
 };
+
+const SLIDE_DURATION_OPTIONS = [
+  { label: "自動（AI台本に合わせる）", value: "0" },
+  { label: "約15秒 / スライド", value: "15" },
+  { label: "約30秒 / スライド", value: "30" },
+  { label: "約45秒 / スライド", value: "45" },
+  { label: "約60秒 / スライド", value: "60" },
+];
+
+const ASPECT_RATIO_OPTIONS = [
+  { label: "横型 16:9（YouTube / PC）", value: "16:9" },
+  { label: "縦型 9:16（Shorts / TikTok / Reels）", value: "9:16" },
+  { label: "正方形 1:1（Instagram / SNS）", value: "1:1" },
+];
+
+const AI_PROVIDER_OPTIONS = [
+  { label: "Google Gemini", value: "gemini" },
+  { label: "OpenAI", value: "openai" },
+  { label: "OpenRouter（複数モデル対応）", value: "openrouter" },
+];
 
 const OPENROUTER_MODELS = [
   { label: "Gemini 2.5 Flash（Google）", value: "google/gemini-2.5-flash" },
@@ -40,6 +78,12 @@ const OPENROUTER_MODELS = [
   { label: "DeepSeek Chat V3（DeepSeek）", value: "deepseek/deepseek-chat" },
   { label: "Mistral Large（Mistral）", value: "mistralai/mistral-large" },
   { label: "Llama 3.1 70B（Meta）", value: "meta-llama/llama-3.1-70b-instruct" },
+];
+
+const TTS_PROVIDER_OPTIONS = [
+  { label: "Edge-TTS（無料）", value: "edge-tts" },
+  { label: "OpenAI TTS（有料・高品質）", value: "openai" },
+  { label: "ボイスクローン（自分の声で読み上げ）", value: "qwen-clone" },
 ];
 
 const VOICE_OPTIONS: Record<string, { label: string; value: string }[]> = {
@@ -85,6 +129,11 @@ const API_KEY_GUIDES: Record<string, { url: string; label: string; steps: string
   },
 };
 
+/** value から対応するラベルを取得するヘルパー */
+function findLabel(options: { label: string; value: string }[], value: string): string {
+  return options.find((o) => o.value === value)?.label ?? value;
+}
+
 export function SettingsForm({
   aiProvider,
   onAiProviderChange,
@@ -96,10 +145,20 @@ export function SettingsForm({
   onTtsProviderChange,
   voice,
   onVoiceChange,
+  slideDuration,
+  onSlideDurationChange,
+  aspectRatio,
+  onAspectRatioChange,
+  dashscopeKey,
+  onDashscopeKeyChange,
+  voiceSample,
+  onVoiceSampleChange,
   disabled,
 }: SettingsFormProps) {
   const [showKey, setShowKey] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [showDashscopeKey, setShowDashscopeKey] = useState(false);
+  const [showDashscopeGuide, setShowDashscopeGuide] = useState(false);
 
   const voices = VOICE_OPTIONS[ttsProvider] || VOICE_OPTIONS["edge-tts"];
   const guide = API_KEY_GUIDES[aiProvider];
@@ -108,38 +167,39 @@ export function SettingsForm({
     <Card className="p-5 space-y-4">
       <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">設定</h2>
 
+      {/* ── AI プロバイダー ── */}
       <div className="space-y-2">
         <Label>AI プロバイダー</Label>
         <Select value={aiProvider} onValueChange={safeChange(onAiProviderChange)} disabled={disabled}>
           <SelectTrigger className="w-full">
-            <SelectValue />
+            <SelectValue>{findLabel(AI_PROVIDER_OPTIONS, aiProvider)}</SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="gemini">Google Gemini</SelectItem>
-            <SelectItem value="openai">OpenAI</SelectItem>
-            <SelectItem value="openrouter">OpenRouter（複数モデル対応）</SelectItem>
+            {AI_PROVIDER_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
 
+      {/* ── OpenRouter モデル選択 ── */}
       {aiProvider === "openrouter" && (
         <div className="space-y-2">
           <Label>モデル</Label>
           <Select value={aiModel} onValueChange={safeChange(onAiModelChange)} disabled={disabled}>
             <SelectTrigger className="w-full">
-              <SelectValue />
+              <SelectValue>{findLabel(OPENROUTER_MODELS, aiModel)}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {OPENROUTER_MODELS.map((m) => (
-                <SelectItem key={m.value} value={m.value}>
-                  {m.label}
-                </SelectItem>
+                <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
       )}
 
+      {/* ── API キー ── */}
       <div className="space-y-2">
         <Label>API キー</Label>
         <div className="relative">
@@ -212,38 +272,203 @@ export function SettingsForm({
         </div>
       </div>
 
+      {/* ── 音声合成エンジン ── */}
       <div className="space-y-2">
         <Label>音声合成エンジン</Label>
         <Select
           value={ttsProvider}
           onValueChange={safeChange((v) => {
             onTtsProviderChange(v);
-            const defaultVoice = VOICE_OPTIONS[v]?.[0]?.value;
-            if (defaultVoice) onVoiceChange(defaultVoice);
+            // ボイスクローン以外はデフォルトボイスに切替
+            if (v !== "qwen-clone") {
+              const defaultVoice = VOICE_OPTIONS[v]?.[0]?.value;
+              if (defaultVoice) onVoiceChange(defaultVoice);
+            }
           })}
           disabled={disabled}
         >
           <SelectTrigger className="w-full">
-            <SelectValue />
+            <SelectValue>{findLabel(TTS_PROVIDER_OPTIONS, ttsProvider)}</SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="edge-tts">Edge-TTS（無料）</SelectItem>
-            <SelectItem value="openai">OpenAI TTS（有料・高品質）</SelectItem>
+            {TTS_PROVIDER_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
 
+      {/* ── 話者（ボイスクローン以外） ── */}
+      {ttsProvider !== "qwen-clone" && (
+        <div className="space-y-2">
+          <Label>話者</Label>
+          <Select value={voice} onValueChange={safeChange(onVoiceChange)} disabled={disabled}>
+            <SelectTrigger className="w-full">
+              <SelectValue>{findLabel(voices, voice)}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {voices.map((v) => (
+                <SelectItem key={v.value} value={v.value}>{v.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {/* ── ボイスクローン設定 ── */}
+      {ttsProvider === "qwen-clone" && (
+        <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+          <h3 className="font-semibold text-sm">ボイスクローン設定</h3>
+          <p className="text-xs text-muted-foreground">
+            あなたの声（10〜20秒の音声サンプル）を元に、AIがナレーションを読み上げます。
+          </p>
+
+          {/* DashScope API キー */}
+          <div className="space-y-2">
+            <Label>DashScope API キー</Label>
+            <div className="relative">
+              <input
+                type={showDashscopeKey ? "text" : "password"}
+                value={dashscopeKey}
+                onChange={(e) => onDashscopeKeyChange(e.target.value)}
+                placeholder="sk-..."
+                disabled={disabled}
+                className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowDashscopeKey(!showDashscopeKey)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showDashscopeKey ? (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.59 6.59m7.532 7.532l3.29 3.29M3 3l18 18" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                )}
+              </button>
+            </div>
+
+            <div className="text-xs">
+              <button
+                type="button"
+                onClick={() => setShowDashscopeGuide(!showDashscopeGuide)}
+                className="text-primary hover:underline font-medium inline-flex items-center gap-1"
+              >
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                DashScope キーの取得方法
+                <svg className={`w-3 h-3 transition-transform ${showDashscopeGuide ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {showDashscopeGuide && (
+                <div className="mt-2 p-3 rounded-md bg-muted/50 border border-border space-y-2">
+                  <a
+                    href={DASHSCOPE_KEY_GUIDE.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline font-medium inline-flex items-center gap-1"
+                  >
+                    {DASHSCOPE_KEY_GUIDE.label}
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                  <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                    {DASHSCOPE_KEY_GUIDE.steps.map((step, i) => (
+                      <li key={i}>{step}</li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 音声サンプルアップロード */}
+          <div className="space-y-2">
+            <Label>音声サンプル</Label>
+            {voiceSample ? (
+              <div className="flex items-center gap-2 p-2 rounded-md border border-border bg-background">
+                <svg className="w-5 h-5 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                </svg>
+                <span className="text-sm truncate flex-1">{voiceSample.name}</span>
+                <button
+                  type="button"
+                  onClick={() => onVoiceSampleChange(null)}
+                  disabled={disabled}
+                  className="text-muted-foreground hover:text-destructive text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <label className={`flex flex-col items-center gap-2 p-4 rounded-md border-2 border-dashed border-border cursor-pointer hover:border-primary/50 transition-colors ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}>
+                <svg className="w-8 h-8 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+                <span className="text-sm text-muted-foreground">クリックして音声ファイルを選択</span>
+                <span className="text-xs text-muted-foreground">WAV / MP3 / M4A（10〜20秒推奨）</span>
+                <input
+                  type="file"
+                  accept=".wav,.mp3,.m4a"
+                  className="hidden"
+                  disabled={disabled}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) onVoiceSampleChange(f);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            )}
+            <p className="text-xs text-muted-foreground">
+              静かな環境で録音した、はっきり話す音声が最適です。雑音の少ないサンプルほど高品質なクローンになります。
+            </p>
+          </div>
+        </div>
+      )}
+
+      <hr className="border-border" />
+      <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">動画設定</h2>
+
+      {/* ── スライド時間 ── */}
       <div className="space-y-2">
-        <Label>話者</Label>
-        <Select value={voice} onValueChange={safeChange(onVoiceChange)} disabled={disabled}>
+        <Label>1スライドあたりの時間</Label>
+        <Select
+          value={String(slideDuration)}
+          onValueChange={safeChange((v) => onSlideDurationChange(Number(v)))}
+          disabled={disabled}
+        >
           <SelectTrigger className="w-full">
-            <SelectValue />
+            <SelectValue>{findLabel(SLIDE_DURATION_OPTIONS, String(slideDuration))}</SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {voices.map((v) => (
-              <SelectItem key={v.value} value={v.value}>
-                {v.label}
-              </SelectItem>
+            {SLIDE_DURATION_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">AIが生成する台本の分量と動画の長さを調整します。</p>
+      </div>
+
+      {/* ── アスペクト比 ── */}
+      <div className="space-y-2">
+        <Label>アスペクト比</Label>
+        <Select value={aspectRatio} onValueChange={safeChange(onAspectRatioChange)} disabled={disabled}>
+          <SelectTrigger className="w-full">
+            <SelectValue>{findLabel(ASPECT_RATIO_OPTIONS, aspectRatio)}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {ASPECT_RATIO_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
             ))}
           </SelectContent>
         </Select>
