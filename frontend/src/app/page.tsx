@@ -47,6 +47,26 @@ export default function Home() {
     }
   }, [outputLanguage]);
 
+  // 出力言語変更時に Edge-TTS のデフォルト話者を自動切替
+  useEffect(() => {
+    if (ttsProvider !== "edge-tts" || outputLanguage === "") return;
+    const defaultVoices: Record<string, string> = {
+      "auto": "ja-JP-NanamiNeural",
+      "ja": "ja-JP-NanamiNeural",
+      "en": "en-US-JennyNeural",
+      "zh-CN": "zh-CN-XiaoxiaoNeural",
+      "ko": "ko-KR-SunHiNeural",
+      "fr": "fr-FR-DeniseNeural",
+      "es": "es-ES-ElviraNeural",
+      "de": "de-DE-KatjaNeural",
+      "pt": "pt-BR-FranciscaNeural",
+    };
+    const defaultVoice = defaultVoices[outputLanguage];
+    if (defaultVoice) {
+      setVoice(defaultVoice);
+    }
+  }, [outputLanguage, ttsProvider]);
+
   // F-11: ページ離脱対策 Lv1 — 処理中にページを閉じようとすると警告を表示
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {

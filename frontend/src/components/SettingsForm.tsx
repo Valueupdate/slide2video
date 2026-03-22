@@ -100,11 +100,76 @@ const TTS_PROVIDER_OPTIONS = [
   { label: "ボイスクローン（自分の声で読み上げ）", value: "qwen-clone" },
 ];
 
-const VOICE_OPTIONS: Record<string, { label: string; value: string }[]> = {
-  "edge-tts": [
+const EDGE_TTS_VOICES_BY_LANG: Record<string, { label: string; value: string }[]> = {
+  "ja": [
     { label: "Nanami（女性・落ち着き）", value: "ja-JP-NanamiNeural" },
     { label: "Keita（男性・標準）", value: "ja-JP-KeitaNeural" },
+    { label: "Aoi（女性・明るい）", value: "ja-JP-AoiNeural" },
+    { label: "Daichi（男性・低め）", value: "ja-JP-DaichiNeural" },
+    { label: "Mayu（女性・やさしい）", value: "ja-JP-MayuNeural" },
+    { label: "Naoki（男性・フォーマル）", value: "ja-JP-NaokiNeural" },
+    { label: "Shiori（女性・ニュース調）", value: "ja-JP-ShioriNeural" },
   ],
+  "en": [
+    { label: "Jenny（女性・アメリカ）", value: "en-US-JennyNeural" },
+    { label: "Guy（男性・アメリカ）", value: "en-US-GuyNeural" },
+    { label: "Aria（女性・プロフェッショナル）", value: "en-US-AriaNeural" },
+    { label: "Davis（男性・落ち着き）", value: "en-US-DavisNeural" },
+    { label: "Sara（女性・フレンドリー）", value: "en-US-SaraNeural" },
+    { label: "Tony（男性・カジュアル）", value: "en-US-TonyNeural" },
+    { label: "Sonia（女性・イギリス）", value: "en-GB-SoniaNeural" },
+    { label: "Ryan（男性・イギリス）", value: "en-GB-RyanNeural" },
+    { label: "Natasha（女性・オーストラリア）", value: "en-AU-NatashaNeural" },
+    { label: "William（男性・オーストラリア）", value: "en-AU-WilliamNeural" },
+  ],
+  "zh-CN": [
+    { label: "Xiaoxiao（女性・やさしい）", value: "zh-CN-XiaoxiaoNeural" },
+    { label: "Yunxi（男性・標準）", value: "zh-CN-YunxiNeural" },
+    { label: "Xiaoyi（女性・明るい）", value: "zh-CN-XiaoyiNeural" },
+    { label: "Yunjian（男性・低め）", value: "zh-CN-YunjianNeural" },
+    { label: "Xiaomeng（女性・キュート）", value: "zh-CN-XiaomengNeural" },
+    { label: "Yunze（男性・フォーマル）", value: "zh-CN-YunzeNeural" },
+  ],
+  "ko": [
+    { label: "SunHi（女性・標準）", value: "ko-KR-SunHiNeural" },
+    { label: "InJoon（男性・標準）", value: "ko-KR-InJoonNeural" },
+    { label: "BongJin（男性・落ち着き）", value: "ko-KR-BongJinNeural" },
+    { label: "GookMin（男性・フォーマル）", value: "ko-KR-GookMinNeural" },
+    { label: "JiMin（女性・明るい）", value: "ko-KR-JiMinNeural" },
+    { label: "YuJin（女性・やさしい）", value: "ko-KR-YuJinNeural" },
+  ],
+  "fr": [
+    { label: "Denise（女性・標準）", value: "fr-FR-DeniseNeural" },
+    { label: "Henri（男性・標準）", value: "fr-FR-HenriNeural" },
+    { label: "Eloise（女性・やさしい）", value: "fr-FR-EloiseNeural" },
+    { label: "Vivienne（女性・フォーマル）", value: "fr-FR-VivienneMultilingualNeural" },
+    { label: "Remy（男性・フォーマル）", value: "fr-FR-RemyMultilingualNeural" },
+  ],
+  "es": [
+    { label: "Elvira（女性・スペイン）", value: "es-ES-ElviraNeural" },
+    { label: "Alvaro（男性・スペイン）", value: "es-ES-AlvaroNeural" },
+    { label: "Dalia（女性・メキシコ）", value: "es-MX-DaliaNeural" },
+    { label: "Jorge（男性・メキシコ）", value: "es-MX-JorgeNeural" },
+    { label: "Elena（女性・アルゼンチン）", value: "es-AR-ElenaNeural" },
+    { label: "Tomas（男性・アルゼンチン）", value: "es-AR-TomasNeural" },
+  ],
+  "de": [
+    { label: "Katja（女性・標準）", value: "de-DE-KatjaNeural" },
+    { label: "Conrad（男性・標準）", value: "de-DE-ConradNeural" },
+    { label: "Amala（女性・やさしい）", value: "de-DE-AmalaNeural" },
+    { label: "Florian（男性・フォーマル）", value: "de-DE-FlorianMultilingualNeural" },
+    { label: "Seraphina（女性・フォーマル）", value: "de-DE-SeraphinaMultilingualNeural" },
+  ],
+  "pt": [
+    { label: "Francisca（女性・ブラジル）", value: "pt-BR-FranciscaNeural" },
+    { label: "Antonio（男性・ブラジル）", value: "pt-BR-AntonioNeural" },
+    { label: "Thalita（女性・明るい）", value: "pt-BR-ThalitaNeural" },
+    { label: "Raquel（女性・ポルトガル）", value: "pt-PT-RaquelNeural" },
+    { label: "Duarte（男性・ポルトガル）", value: "pt-PT-DuarteNeural" },
+  ],
+};
+
+const VOICE_OPTIONS: Record<string, { label: string; value: string }[]> = {
   openai: [
     { label: "Alloy（中性的）", value: "alloy" },
     { label: "Nova（女性）", value: "nova" },
@@ -176,7 +241,8 @@ export function SettingsForm({
   const [showDashscopeKey, setShowDashscopeKey] = useState(false);
   const [showDashscopeGuide, setShowDashscopeGuide] = useState(false);
 
-  const voices = VOICE_OPTIONS[ttsProvider] || VOICE_OPTIONS["edge-tts"];
+  const edgeVoicesForLang = EDGE_TTS_VOICES_BY_LANG[outputLanguage] || EDGE_TTS_VOICES_BY_LANG["ja"];
+  const voices = ttsProvider === "edge-tts" ? edgeVoicesForLang : (VOICE_OPTIONS[ttsProvider] || edgeVoicesForLang);
   const guide = API_KEY_GUIDES[aiProvider];
 
   return (
@@ -330,6 +396,24 @@ export function SettingsForm({
         </div>
       </div>
 
+      {/* ── ナレーション言語 ── */}
+      <div className="space-y-2">
+        <Label>ナレーション言語</Label>
+        <Select value={outputLanguage} onValueChange={safeChange(onOutputLanguageChange)} disabled={disabled}>
+          <SelectTrigger className="w-full">
+            <SelectValue>{findLabel(OUTPUT_LANGUAGE_OPTIONS, outputLanguage)}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {OUTPUT_LANGUAGE_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          PDFの言語に関係なく、選択した言語でナレーション台本を生成します。
+        </p>
+      </div>
+
       {/* ── 音声合成エンジン ── */}
       <div className="space-y-2">
         <Label>音声合成エンジン</Label>
@@ -337,8 +421,11 @@ export function SettingsForm({
           value={ttsProvider}
           onValueChange={safeChange((v) => {
             onTtsProviderChange(v);
-            // ボイスクローン以外はデフォルトボイスに切替
-            if (v !== "qwen-clone") {
+            // Edge-TTS切替時は言語に合ったデフォルトボイスに切替
+            if (v === "edge-tts") {
+              const langVoices = EDGE_TTS_VOICES_BY_LANG[outputLanguage] || EDGE_TTS_VOICES_BY_LANG["ja"];
+              if (langVoices[0]) onVoiceChange(langVoices[0].value);
+            } else if (v !== "qwen-clone") {
               const defaultVoice = VOICE_OPTIONS[v]?.[0]?.value;
               if (defaultVoice) onVoiceChange(defaultVoice);
             }
@@ -490,6 +577,9 @@ export function SettingsForm({
             <p className="text-xs text-muted-foreground">
               静かな環境で録音した、はっきり話す音声が最適です。雑音の少ないサンプルほど高品質なクローンになります。
             </p>
+            <p className="text-xs text-muted-foreground">
+              💡 ナレーション言語と異なる言語のサンプルでも使用できますが、より自然な発音にはナレーション言語と同じ言語で録音したサンプルをお勧めします。
+            </p>
           </div>
         </div>
       )}
@@ -530,24 +620,6 @@ export function SettingsForm({
             ))}
           </SelectContent>
         </Select>
-      </div>
-
-      {/* ── ナレーション言語 ── */}
-      <div className="space-y-2">
-        <Label>ナレーション言語</Label>
-        <Select value={outputLanguage} onValueChange={safeChange(onOutputLanguageChange)} disabled={disabled}>
-          <SelectTrigger className="w-full">
-            <SelectValue>{findLabel(OUTPUT_LANGUAGE_OPTIONS, outputLanguage)}</SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {OUTPUT_LANGUAGE_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <p className="text-xs text-muted-foreground">
-          PDFの言語に関係なく、選択した言語でナレーション台本を生成します。「原文のまま」はスライドと同じ言語で出力します。
-        </p>
       </div>
     </Card>
   );

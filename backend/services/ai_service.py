@@ -195,7 +195,7 @@ async def generate_scripts(
     total_groups = len(groups)
     processed_pages = 0
 
-    print(f"[AIService] Batch mode: {total} pages in {total_groups} batches (size={batch_size})")
+    print(f"[AIService] Batch mode: {total} pages in {total_groups} batches (size={batch_size}), language={output_language}")
 
     for group_idx, group in enumerate(groups):
         if progress_callback:
@@ -215,7 +215,7 @@ async def generate_scripts(
                 # バッチ成功: 各ページに台本を割り当て
                 for page, script in zip(group, scripts):
                     page["script"] = script
-                    print(f"[AIService] Batch script for page {page['page_number']}/{total} ({len(script)} chars)")
+                    print(f"[AIService] Batch script for page {page['page_number']}/{total} ({len(script)} chars): {script[:100]}")
                 processed_pages += len(group)
                 continue
 
@@ -290,6 +290,8 @@ async def _generate_batch(
         duration_instruction=duration_instruction,
         language_instruction=language_instruction,
     )
+
+    print(f"[AIService] Batch prompt language instruction: {language_instruction}")
 
     # 全スライドの画像を収集
     images = []
