@@ -67,6 +67,7 @@ async def run_generation(
     voice: str,
     slide_duration: int,
     aspect_ratio: str,
+    output_language: str = "ja",
     dashscope_api_key: Optional[str] = None,
     voice_sample_path: Optional[str] = None,
 ):
@@ -84,6 +85,7 @@ async def run_generation(
         pages = await generate_scripts(
             pages, ai_provider, api_key, script_progress,
             ai_model=ai_model, target_duration=slide_duration,
+            output_language=output_language,
         )
         await job.update("script_gen", 50, "全スライドの台本生成完了")
 
@@ -128,9 +130,23 @@ async def run_generation(
 
         # 5. 動画生成
         resolution = ASPECT_RATIO_RESOLUTIONS.get(aspect_ratio, (1920, 1080))
-        await job.update("video_render", 85, f"動画レンダリング中... ({aspect_ratio})")
+        total_pages = len(pages)
+        await job.update("video_render", 82, f"動画レンダリング開始 ({total_pages}スライド, {aspect_ratio})")
+
+        async def video_progress(current, total, duration, concat=False):
+            if concat:
+                await job.update("video_render", 93, f"動画セグメントを結合中... ({total}スライド分)")
+            else:
+                pct = 82 + int((current / total) * 10)  # 82〜92%
+                await job.update("video_render", pct, f"スライド {current}/{total} をレンダリング中... ({duration:.1f}秒)")
+
         output_path = os.path.join(job.work_dir, f"{job.job_id}.mp4")
-        await generate_video(pages, output_path, resolution=resolution, min_duration=slide_duration)
+        await generate_video(
+            pages, output_path,
+            resolution=resolution,
+            min_duration=slide_duration,
+            progress_callback=video_progress,
+        )
         await job.update("video_render", 95, "動画レンダリング完了")
 
         # 6. 完了
@@ -158,6 +174,7 @@ async def generate(
     tts_provider: str = Form(DEFAULT_TTS_PROVIDER),
     slide_duration: int = Form(DEFAULT_SLIDE_DURATION),
     aspect_ratio: str = Form(DEFAULT_ASPECT_RATIO),
+    output_language: str = Form("ja"),
     voice_sample: Optional[UploadFile] = File(None),
     x_ai_provider: Optional[str] = Header(None),
     x_api_key: Optional[str] = Header(None),
@@ -226,6 +243,7 @@ async def generate(
         voice=voice,
         slide_duration=slide_duration,
         aspect_ratio=aspect_ratio,
+        output_language=output_language,
         dashscope_api_key=x_dashscope_key,
         voice_sample_path=voice_sample_path,
     )

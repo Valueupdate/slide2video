@@ -47,6 +47,7 @@ async def generate_video(
     output_path: str,
     resolution: Tuple[int, int] = (1920, 1080),
     min_duration: int = 0,
+    progress_callback=None,
 ) -> str:
     """
     スライド画像と音声を合成してMP4動画を生成する。
@@ -56,6 +57,7 @@ async def generate_video(
         output_path: 出力MP4ファイルのパス
         resolution: 出力解像度 (width, height)
         min_duration: スライド最小表示秒数（0=音声長に合わせる）
+        progress_callback: async def callback(pct: int, msg: str) — 進捗通知用
 
     Returns:
         生成された動画ファイルのパス

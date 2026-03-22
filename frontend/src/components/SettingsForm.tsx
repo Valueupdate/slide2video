@@ -21,6 +21,18 @@ const DASHSCOPE_KEY_GUIDE = {
   ],
 };
 
+const OUTPUT_LANGUAGE_OPTIONS = [
+  { label: "原文のまま（自動判定）", value: "auto" },
+  { label: "日本語", value: "ja" },
+  { label: "English", value: "en" },
+  { label: "中文（简体）", value: "zh-CN" },
+  { label: "한국어", value: "ko" },
+  { label: "Français", value: "fr" },
+  { label: "Español", value: "es" },
+  { label: "Deutsch", value: "de" },
+  { label: "Português", value: "pt" },
+];
+
 interface SettingsFormProps {
   aiProvider: string;
   onAiProviderChange: (v: string) => void;
@@ -36,6 +48,8 @@ interface SettingsFormProps {
   onSlideDurationChange: (v: number) => void;
   aspectRatio: string;
   onAspectRatioChange: (v: string) => void;
+  outputLanguage: string;
+  onOutputLanguageChange: (v: string) => void;
   dashscopeKey: string;
   onDashscopeKeyChange: (v: string) => void;
   voiceSample: File | null;
@@ -149,6 +163,8 @@ export function SettingsForm({
   onSlideDurationChange,
   aspectRatio,
   onAspectRatioChange,
+  outputLanguage,
+  onOutputLanguageChange,
   dashscopeKey,
   onDashscopeKeyChange,
   voiceSample,
@@ -514,6 +530,24 @@ export function SettingsForm({
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      {/* ── ナレーション言語 ── */}
+      <div className="space-y-2">
+        <Label>ナレーション言語</Label>
+        <Select value={outputLanguage} onValueChange={safeChange(onOutputLanguageChange)} disabled={disabled}>
+          <SelectTrigger className="w-full">
+            <SelectValue>{findLabel(OUTPUT_LANGUAGE_OPTIONS, outputLanguage)}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {OUTPUT_LANGUAGE_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          PDFの言語に関係なく、選択した言語でナレーション台本を生成します。「原文のまま」はスライドと同じ言語で出力します。
+        </p>
       </div>
     </Card>
   );

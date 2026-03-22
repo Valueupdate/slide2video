@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { UploadArea } from "@/components/UploadArea";
 import { SettingsForm } from "@/components/SettingsForm";
@@ -25,6 +25,7 @@ export default function Home() {
   const [voice, setVoice] = useState<string>("ja-JP-NanamiNeural");
   const [slideDuration, setSlideDuration] = useState<number>(0);
   const [aspectRatio, setAspectRatio] = useState<string>("16:9");
+  const [outputLanguage, setOutputLanguage] = useState<string>("");
   const [dashscopeKey, setDashscopeKey] = useState<string>("");
   const [voiceSample, setVoiceSample] = useState<File | null>(null);
   const [progress, setProgress] = useState<number>(0);
@@ -34,6 +35,28 @@ export default function Home() {
   const abortRef = useRef<AbortController | null>(null);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+
+  // ブラウザの言語設定からデフォルト出力言語を推定
+  useEffect(() => {
+    if (outputLanguage === "") {
+      const browserLang = navigator.language || "ja";
+      const langCode = browserLang.startsWith("zh") ? "zh-CN"
+        : browserLang.split("-")[0];
+      const supported = ["ja", "en", "zh-CN", "ko", "fr", "es", "de", "pt", "auto"];
+      setOutputLanguage(supported.includes(langCode) ? langCode : "en");
+    }
+  }, [outputLanguage]);
+
+  // F-11: ページ離脱対策 Lv1 — 処理中にページを閉じようとすると警告を表示
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (state === "processing") {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [state]);
 
   const addLog = useCallback((step: string, message: string) => {
     setLogs((prev) => [...prev, { step, message, timestamp: new Date() }]);
@@ -73,6 +96,7 @@ export default function Home() {
       formData.append("tts_provider", ttsProvider);
       formData.append("slide_duration", String(slideDuration));
       formData.append("aspect_ratio", aspectRatio);
+      formData.append("output_language", outputLanguage);
 
       // ボイスクローン時は音声サンプルを追加
       if (ttsProvider === "qwen-clone" && voiceSample) {
@@ -168,7 +192,7 @@ export default function Home() {
       addLog("error", message);
       setState("error");
     }
-  }, [file, apiKey, aiProvider, aiModel, ttsProvider, voice, slideDuration, aspectRatio, dashscopeKey, voiceSample, API_URL, addLog]);
+  }, [file, apiKey, aiProvider, aiModel, ttsProvider, voice, slideDuration, aspectRatio, outputLanguage, dashscopeKey, voiceSample, API_URL, addLog]);
 
   const handleReset = useCallback(() => {
     if (abortRef.current) abortRef.current.abort();
@@ -242,6 +266,8 @@ export default function Home() {
           onSlideDurationChange={setSlideDuration}
           aspectRatio={aspectRatio}
           onAspectRatioChange={setAspectRatio}
+          outputLanguage={outputLanguage}
+          onOutputLanguageChange={setOutputLanguage}
           dashscopeKey={dashscopeKey}
           onDashscopeKeyChange={setDashscopeKey}
           voiceSample={voiceSample}

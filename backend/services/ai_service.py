@@ -27,6 +27,7 @@ SCRIPT_PROMPT_TEMPLATE = """あなたはプロのプレゼンターです。
 
 制約事項:
 {duration_instruction}
+{language_instruction}
 - 聴衆に語りかけるような自然な表現にしてください。
 - 専門用語があれば簡潔に解説を加えてください。
 - 出力は台本テキストのみを返してください。JSON不要です。余分な前置き・後書き不要です。"""
@@ -38,6 +39,7 @@ BATCH_PROMPT_TEMPLATE = """あなたはプロのプレゼンターです。
 
 制約事項:
 {duration_instruction}
+{language_instruction}
 - 聴衆に語りかけるような自然な表現にしてください。
 - 専門用語があれば簡潔に解説を加えてください。
 - 各スライドの台本を以下の形式で区切って出力してください:
@@ -48,6 +50,28 @@ BATCH_PROMPT_TEMPLATE = """あなたはプロのプレゼンターです。
 （スライド2の台本テキスト）
 
 このように ---SLIDE_N--- の区切りを必ず入れてください。台本テキスト以外の余分な説明は不要です。"""
+
+
+# 出力言語の設定
+OUTPUT_LANGUAGES = {
+    "auto": {"label": "原文のまま（自動判定）", "instruction": "- スライドの原文と同じ言語で台本を作成してください。"},
+    "ja": {"label": "日本語", "instruction": "- 台本は必ず日本語で作成してください。スライドが他の言語の場合は日本語に翻訳してください。"},
+    "en": {"label": "English", "instruction": "- The script MUST be written in English. If the slides are in another language, translate to English."},
+    "zh-CN": {"label": "中文（简体）", "instruction": "- 台本必须用简体中文撰写。如果幻灯片是其他语言，请翻译成中文。"},
+    "ko": {"label": "한국어", "instruction": "- 대본은 반드시 한국어로 작성하세요. 슬라이드가 다른 언어인 경우 한국어로 번역하세요。"},
+    "fr": {"label": "Français", "instruction": "- Le script DOIT être rédigé en français. Si les diapositives sont dans une autre langue, traduisez en français."},
+    "es": {"label": "Español", "instruction": "- El guión DEBE estar escrito en español. Si las diapositivas están en otro idioma, tradúzcalas al español."},
+    "de": {"label": "Deutsch", "instruction": "- Das Skript MUSS auf Deutsch verfasst werden. Falls die Folien in einer anderen Sprache sind, übersetzen Sie ins Deutsche."},
+    "pt": {"label": "Português", "instruction": "- O roteiro DEVE ser escrito em português. Se os slides estiverem em outro idioma, traduza para português."},
+}
+
+
+def _build_language_instruction(output_language: str) -> str:
+    """出力言語に応じたプロンプト指示文を生成する"""
+    lang_info = OUTPUT_LANGUAGES.get(output_language)
+    if lang_info:
+        return lang_info["instruction"]
+    return OUTPUT_LANGUAGES["ja"]["instruction"]
 
 
 def _build_duration_instruction(target_duration: int) -> str:
@@ -135,6 +159,7 @@ async def generate_scripts(
     ai_model: Optional[str] = None,
     target_duration: int = 0,
     batch_size: int = DEFAULT_BATCH_SIZE,
+    output_language: str = "ja",
 ) -> List[Dict[str, Any]]:
     """
     全ページの台本を生成する。バッチモードで複数スライドを1リクエストにまとめる。
@@ -147,6 +172,7 @@ async def generate_scripts(
         ai_model: OpenRouter使用時のモデル名
         target_duration: 1スライドあたりの目標秒数（0=自動）
         batch_size: 1リクエストあたりのスライド数（デフォルト3）
+        output_language: 出力言語コード（"ja", "en", "auto" 等）
 
     Returns:
         各ページに "script" フィールドを追加したリスト
@@ -161,7 +187,7 @@ async def generate_scripts(
     if batch_size <= 1:
         # 従来の1枚ずつ生成
         return await _generate_scripts_single(
-            pages, ai_provider, api_key, progress_callback, ai_model, target_duration
+            pages, ai_provider, api_key, progress_callback, ai_model, target_duration, output_language
         )
 
     # バッチ生成
@@ -183,7 +209,7 @@ async def generate_scripts(
 
         # バッチ生成を試行
         try:
-            scripts = await _generate_batch(group, ai_provider, api_key, ai_model, target_duration)
+            scripts = await _generate_batch(group, ai_provider, api_key, ai_model, target_duration, output_language)
 
             if len(scripts) == len(group):
                 # バッチ成功: 各ページに台本を割り当て
@@ -208,9 +234,11 @@ async def generate_scripts(
 
             ai_image = _get_ai_image_path(page)
             duration_instruction = _build_duration_instruction(target_duration)
+            language_instruction = _build_language_instruction(output_language)
             prompt = SCRIPT_PROMPT_TEMPLATE.format(
                 slide_text=page["text"] or "(テキストなし — 画像を参照)",
                 duration_instruction=duration_instruction,
+                language_instruction=language_instruction,
             )
 
             try:
@@ -239,6 +267,7 @@ async def _generate_batch(
     api_key: str,
     ai_model: Optional[str],
     target_duration: int,
+    output_language: str = "ja",
 ) -> List[str]:
     """
     バッチ（複数スライド）の台本を1リクエストで生成する。
@@ -254,10 +283,12 @@ async def _generate_batch(
 
     slides_section = "\n\n".join(slides_section_parts)
     duration_instruction = _build_duration_instruction(target_duration)
+    language_instruction = _build_language_instruction(output_language)
 
     prompt = BATCH_PROMPT_TEMPLATE.format(
         slides_section=slides_section,
         duration_instruction=duration_instruction,
+        language_instruction=language_instruction,
     )
 
     # 全スライドの画像を収集
@@ -289,6 +320,7 @@ async def _generate_scripts_single(
     progress_callback: Optional[Callable[[int, str], Awaitable[None]]] = None,
     ai_model: Optional[str] = None,
     target_duration: int = 0,
+    output_language: str = "ja",
 ) -> List[Dict[str, Any]]:
     """従来の1枚ずつ台本生成（フォールバック用）"""
     total = len(pages)
@@ -303,9 +335,11 @@ async def _generate_scripts_single(
             await asyncio.sleep(4)
 
         duration_instruction = _build_duration_instruction(target_duration)
+        language_instruction = _build_language_instruction(output_language)
         prompt = SCRIPT_PROMPT_TEMPLATE.format(
             slide_text=page["text"] or "(テキストなし — 画像を参照)",
             duration_instruction=duration_instruction,
+            language_instruction=language_instruction,
         )
 
         ai_image = _get_ai_image_path(page)
