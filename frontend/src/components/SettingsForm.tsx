@@ -231,6 +231,48 @@ export function SettingsForm({
 
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground">キーはサーバーに保存されません。リクエスト時のみ使用されます。</p>
+
+          {/* レート制限案内リンク（プロバイダー別） */}
+          {aiProvider === "gemini" && (
+            <p className="text-xs text-gray-500">
+              ℹ️ 無料枠のレート制限はプロジェクトにより異なります。
+              <a
+                href="https://aistudio.google.com/rate-limit"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline ml-1"
+              >
+                AI Studio で確認 ↗
+              </a>
+            </p>
+          )}
+          {aiProvider === "openrouter" && (
+            <p className="text-xs text-gray-500">
+              ℹ️ 利用状況と制限は OpenRouter ダッシュボードで確認できます。
+              <a
+                href="https://openrouter.ai/activity"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline ml-1"
+              >
+                OpenRouter Activity で確認 ↗
+              </a>
+            </p>
+          )}
+          {aiProvider === "openai" && (
+            <p className="text-xs text-gray-500">
+              ℹ️ 利用状況は OpenAI ダッシュボードで確認できます。
+              <a
+                href="https://platform.openai.com/usage"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline ml-1"
+              >
+                Usage で確認 ↗
+              </a>
+            </p>
+          )}
+
           {guide && (
             <div className="text-xs">
               <button
