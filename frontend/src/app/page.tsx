@@ -250,15 +250,24 @@ export default function Home() {
         />
 
         {(state === "idle" || state === "ready") && (
-          <button
-            onClick={handleGenerate}
-            disabled={!canGenerate}
-            className="w-full py-3 rounded-lg font-semibold text-base transition-all
-              bg-primary text-primary-foreground hover:opacity-90
-              disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            動画を生成する
-          </button>
+          <div className="space-y-2">
+            <p className="text-xs text-center text-muted-foreground">
+              「動画を生成する」を押すことで、
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                利用規約・免責事項
+              </a>
+              に同意したものとみなします。
+            </p>
+            <button
+              onClick={handleGenerate}
+              disabled={!canGenerate}
+              className="w-full py-3 rounded-lg font-semibold text-base transition-all
+                bg-primary text-primary-foreground hover:opacity-90
+                disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              動画を生成する
+            </button>
+          </div>
         )}
 
         {(state === "processing" || state === "done" || state === "error") && (
@@ -289,9 +298,12 @@ export default function Home() {
         )}
       </main>
 
-      <footer className="py-4 text-center text-sm text-muted-foreground border-t border-border space-y-1">
+      <footer className="py-4 text-center text-sm text-muted-foreground border-t border-border space-y-2">
         <div>Slide2Video — スライドに声を、PDFに命を。</div>
         <div className="text-xs">APIキーはサーバーに保存されません。生成した動画は30分後に自動削除されます。</div>
+        <div className="text-xs">
+          <a href="/terms" className="text-blue-600 hover:underline">利用規約・免責事項</a>
+        </div>
       </footer>
     </div>
   );
