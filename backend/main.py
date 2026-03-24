@@ -267,6 +267,8 @@ async def list_elevenlabs_voices(
                 continue
             seen_ids.add(vid)
             labels = v.get("labels") or {}
+            # 元の category を保持（premade, cloned, generated 等）
+            original_category = v.get("category", "unknown")
             voices.append({
                 "voice_id": vid,
                 "name": v.get("name", "Unknown"),
@@ -275,7 +277,7 @@ async def list_elevenlabs_voices(
                 "description": labels.get("description", ""),
                 "use_case": labels.get("use_case", ""),
                 "age": labels.get("age", ""),
-                "category": "my-voice",
+                "category": original_category,
                 "preview_url": v.get("preview_url", ""),
             })
 

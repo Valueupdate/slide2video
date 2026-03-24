@@ -103,16 +103,14 @@ const AI_PROVIDER_OPTIONS = [
 ];
 
 const OPENROUTER_MODELS = [
-  { label: "Gemini 2.5 Flash（Google）", value: "google/gemini-2.5-flash" },
+  { label: "Gemini 2.5 Flash（Google）⭐ おすすめ", value: "google/gemini-2.5-flash" },
   { label: "Gemini 2.5 Pro（Google）", value: "google/gemini-2.5-pro" },
   { label: "Claude Sonnet 4（Anthropic）", value: "anthropic/claude-sonnet-4" },
   { label: "Claude Haiku 3.5（Anthropic）", value: "anthropic/claude-3.5-haiku" },
   { label: "GPT-4o（OpenAI）", value: "openai/gpt-4o" },
   { label: "GPT-4o mini（OpenAI）", value: "openai/gpt-4o-mini" },
-  { label: "DeepSeek R1（DeepSeek）", value: "deepseek/deepseek-r1" },
-  { label: "DeepSeek Chat V3（DeepSeek）", value: "deepseek/deepseek-chat" },
-  { label: "Mistral Large（Mistral）", value: "mistralai/mistral-large" },
-  { label: "Llama 3.1 70B（Meta）", value: "meta-llama/llama-3.1-70b-instruct" },
+  { label: "Llama 4 Scout（Meta）", value: "meta-llama/llama-4-scout" },
+  { label: "Qwen 2.5 VL 72B（Alibaba）", value: "qwen/qwen2.5-vl-72b-instruct" },
 ];
 
 const TTS_PROVIDER_OPTIONS_BASE = [
@@ -210,22 +208,7 @@ const VOICE_OPTIONS: Record<string, { label: string; value: string }[]> = {
     { label: "Aria（女性・英語プロ）", value: "aria" },
     { label: "Xiaoxiao（女性・中国語）", value: "xiaoxiao" },
   ],
-  elevenlabs: [
-    { label: "Rachel（女性・落ち着き）", value: "rachel" },
-    { label: "Sarah（女性・やさしい）", value: "sarah" },
-    { label: "Emily（女性・明るい）", value: "emily" },
-    { label: "Charlotte（女性・フォーマル）", value: "charlotte" },
-    { label: "Alice（女性・ナチュラル）", value: "alice" },
-    { label: "Matilda（女性・温かみ）", value: "matilda" },
-    { label: "Lily（女性・キュート）", value: "lily" },
-    { label: "Aria（女性・プロフェッショナル）", value: "aria" },
-    { label: "George（男性・落ち着き）", value: "george" },
-    { label: "James（男性・フォーマル）", value: "james" },
-    { label: "Charlie（男性・カジュアル）", value: "charlie" },
-    { label: "Liam（男性・ナチュラル）", value: "liam" },
-    { label: "Harry（男性・明るい）", value: "harry" },
-    { label: "Patrick（男性・低め）", value: "patrick" },
-  ],
+  elevenlabs: [],
 };
 
 const API_KEY_GUIDES: Record<string, { url: string; label: string; steps: string[] }> = {
@@ -348,6 +331,23 @@ export function SettingsForm({
     }
   }, [showElevenLabsModal, elevenLabsVoices.length, dashscopeKey, fetchElevenLabsVoices]);
 
+  // 無料プランで使える音声（premade = ElevenLabs デフォルト提供音声）
+  const elevenLabsMyVoices = elevenLabsVoices.filter((v) => v.category === "premade");
+
+  // API キー入力時にマイボイスを自動取得
+  useEffect(() => {
+    if (ttsProvider === "elevenlabs" && dashscopeKey && elevenLabsVoices.length === 0) {
+      fetchElevenLabsVoices();
+    }
+  }, [ttsProvider, dashscopeKey, elevenLabsVoices.length, fetchElevenLabsVoices]);
+
+  // マイボイス取得後にデフォルト音声を設定
+  useEffect(() => {
+    if (ttsProvider === "elevenlabs" && elevenLabsMyVoices.length > 0 && !elevenLabsMyVoices.find((v) => v.voice_id === voice)) {
+      onVoiceChange(elevenLabsMyVoices[0].voice_id);
+    }
+  }, [ttsProvider, elevenLabsMyVoices, voice, onVoiceChange]);
+
   // ElevenLabs フィルター用の選択肢を動的に生成
   const elevenLabsAccents = Array.from(new Set(elevenLabsVoices.map((v) => v.accent).filter(Boolean))).sort();
   const elevenLabsAges = Array.from(new Set(elevenLabsVoices.map((v) => v.age).filter(Boolean))).sort();
@@ -370,10 +370,10 @@ export function SettingsForm({
   // ElevenLabs で voice_id が選択されたときに名前を記憶
   const currentElevenLabsLabel = (() => {
     if (ttsProvider !== "elevenlabs") return "";
-    // おすすめリストから探す
-    const preset = VOICE_OPTIONS.elevenlabs.find((v) => v.value === voice);
-    if (preset) return preset.label;
-    // 動的取得リストから探す
+    // マイボイス（API取得）から探す
+    const myVoice = elevenLabsVoices.find((v) => v.voice_id === voice);
+    if (myVoice) return `${myVoice.name}（${myVoice.gender === "female" ? "女性" : myVoice.gender === "male" ? "男性" : myVoice.gender}）`;
+    // モーダルから選択した場合
     if (selectedElevenLabsVoiceName) return selectedElevenLabsVoiceName;
     return voice;
   })();
@@ -571,16 +571,25 @@ export function SettingsForm({
           <Label>話者</Label>
           {ttsProvider === "elevenlabs" ? (
             <>
-              <Select value={voice} onValueChange={safeChange((v) => { onVoiceChange(v); setSelectedElevenLabsVoiceName(""); })} disabled={disabled}>
-                <SelectTrigger className="w-full">
-                  <SelectValue>{currentElevenLabsLabel}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {VOICE_OPTIONS.elevenlabs.map((v) => (
-                    <SelectItem key={v.value} value={v.value}>{v.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* マイボイス（無料で使える音声）をコンボボックスに表示 */}
+              {elevenLabsMyVoices.length > 0 ? (
+                <Select value={voice} onValueChange={safeChange((v) => { onVoiceChange(v); setSelectedElevenLabsVoiceName(""); })} disabled={disabled}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue>{currentElevenLabsLabel || "音声を選択"}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {elevenLabsMyVoices.map((v) => (
+                      <SelectItem key={v.voice_id} value={v.voice_id}>
+                        {v.name}（{v.gender === "female" ? "女性" : v.gender === "male" ? "男性" : v.gender}）
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-xs text-muted-foreground py-2">
+                  {dashscopeKey ? "音声を読み込み中..." : "API キーを入力すると利用可能な音声が表示されます"}
+                </p>
+              )}
               {dashscopeKey && (
                 <button
                   type="button"
@@ -790,16 +799,17 @@ export function SettingsForm({
                   }}
                   className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors hover:bg-accent ${
                     voice === v.voice_id ? "bg-accent ring-1 ring-primary" : ""
-                  } ${v.category !== "my-voice" ? "opacity-80" : ""}`}
+                  } ${v.category !== "premade" ? "opacity-80" : ""}`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-medium">{v.name}</span>
                     <span className={`text-xs px-1.5 py-0.5 rounded ${
-                      v.category === "my-voice" ? "bg-primary/20 text-primary" :
-                      v.category === "community-local" ? "bg-green-500/20 text-green-400" :
+                      v.category === "premade" ? "bg-green-500/20 text-green-400" :
+                      v.category === "cloned" ? "bg-primary/20 text-primary" :
+                      v.category === "community-local" ? "bg-blue-500/20 text-blue-400" :
                       "bg-muted text-muted-foreground"
                     }`}>
-                      {v.category === "my-voice" ? "マイ" : v.category === "community-local" ? outputLanguage.toUpperCase() : "Global"}
+                      {v.category === "premade" ? "無料" : v.category === "cloned" ? "クローン" : v.category === "community-local" ? outputLanguage.toUpperCase() : "Global"}
                     </span>
                   </div>
                   <div className="text-xs text-muted-foreground mt-0.5">
@@ -811,7 +821,7 @@ export function SettingsForm({
                       v.description,
                     ].filter(Boolean).join(" · ")}
                   </div>
-                  {v.category !== "my-voice" && (
+                  {v.category !== "premade" && (
                     <span className="text-xs text-yellow-500 mt-0.5 block">⚠ 有料プラン（Starter $5/月〜）が必要</span>
                   )}
                   {v.preview_url && (
