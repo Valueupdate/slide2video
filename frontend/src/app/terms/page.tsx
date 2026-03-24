@@ -60,6 +60,9 @@ export default function TermsPage() {
           <li><a href="https://ai.google.dev/gemini-api/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google Gemini API 利用規約</a></li>
           <li><a href="https://openai.com/policies/terms-of-use" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">OpenAI 利用規約</a></li>
           <li><a href="https://openrouter.ai/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">OpenRouter 利用規約</a></li>
+          <li><a href="https://elevenlabs.io/terms-of-service" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">ElevenLabs 利用規約</a></li>
+          <li><a href="https://azure.microsoft.com/en-us/support/legal/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Microsoft Azure 利用規約</a></li>
+          <li><a href="https://cloud.google.com/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google Cloud 利用規約</a></li>
           <li><a href="https://www.alibabacloud.com/help/en/legal" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Alibaba Cloud（DashScope）利用規約</a></li>
         </ul>
 
