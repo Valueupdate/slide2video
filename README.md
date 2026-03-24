@@ -95,4 +95,4 @@ Create `backend/.env` with the following:
 - Users are responsible for the copyright of uploaded PDFs
 - Accuracy of AI-generated content is not guaranteed
 - Please comply with each AI provider's terms of service
-- See [Terms of Service](/terms) for details
+- See the Terms of Service page within the application for details
