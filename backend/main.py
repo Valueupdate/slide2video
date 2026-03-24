@@ -16,7 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from typing import Optional
 
 from config import (
-    APP_VERSION, TEMP_DIR, FRONTEND_URL, MAX_PDF_SIZE_BYTES,
+    APP_VERSION, TEMP_DIR, FRONTEND_URL, EXTRA_CORS_ORIGINS, MAX_PDF_SIZE_BYTES,
     JOB_CLEANUP_INTERVAL_SECONDS, DEFAULT_VOICE, DEFAULT_TTS_PROVIDER,
     DEFAULT_SLIDE_DURATION, DEFAULT_ASPECT_RATIO, ASPECT_RATIO_RESOLUTIONS,
     RUNPOD_ENDPOINT_URL,
@@ -50,7 +50,7 @@ app = FastAPI(title="Slide2Video API", version=APP_VERSION, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "http://localhost:3000"],
+    allow_origins=[FRONTEND_URL, "http://localhost:3000"] + EXTRA_CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

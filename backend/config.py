@@ -23,6 +23,13 @@ PORT = int(os.getenv("PORT", "8000"))
 # ─── フロントエンドURL（CORS用）─────────────────────
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
+# 追加の CORS 許可オリジン（カンマ区切りで複数指定可）
+EXTRA_CORS_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("EXTRA_CORS_ORIGINS", "").split(",")
+    if origin.strip()
+]
+
 # ─── ファイル制限 ────────────────────────────────────
 MAX_PDF_SIZE_MB = 50
 MAX_PDF_SIZE_BYTES = MAX_PDF_SIZE_MB * 1024 * 1024

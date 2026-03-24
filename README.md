@@ -63,9 +63,20 @@ Create `backend/.env` with the following:
     # Frontend URL (for CORS)
     FRONTEND_URL=http://localhost:3000
 
+    # Additional CORS origins (comma-separated, for ngrok, custom domains, etc.)
+    # EXTRA_CORS_ORIGINS=https://your-app.ngrok-free.dev,https://your-domain.com
+
     # RunPod (pro voice actors, optional)
     RUNPOD_ENDPOINT_URL=
     RUNPOD_API_KEY=
+
+### Deploying with ngrok
+
+If you expose the backend via ngrok or a similar tunnel service, add the public URL to `EXTRA_CORS_ORIGINS` in `backend/.env`:
+
+    EXTRA_CORS_ORIGINS=https://your-subdomain.ngrok-free.dev
+
+No code changes are required — all deployment-specific URLs are managed through environment variables.
 
 ## TTS Provider Comparison
 

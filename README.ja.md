@@ -63,9 +63,20 @@ backend/.env に以下を設定できます：
     # フロントエンドのURL（CORS用）
     FRONTEND_URL=http://localhost:3000
 
+    # 追加の CORS 許可オリジン（カンマ区切り、ngrok やカスタムドメイン等）
+    # EXTRA_CORS_ORIGINS=https://your-app.ngrok-free.dev,https://your-domain.com
+
     # RunPod（プロ声優ボイス・オプション）
     RUNPOD_ENDPOINT_URL=
     RUNPOD_API_KEY=
+
+### ngrok でのデプロイ
+
+ngrok 等のトンネルサービスでバックエンドを公開する場合、公開 URL を `backend/.env` の `EXTRA_CORS_ORIGINS` に追加してください：
+
+    EXTRA_CORS_ORIGINS=https://your-subdomain.ngrok-free.dev
+
+コードの変更は不要です。デプロイ固有の URL はすべて環境変数で管理されます。
 
 ## TTS プロバイダー比較
 
