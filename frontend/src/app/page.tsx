@@ -23,6 +23,8 @@ export default function Home() {
   const [aiModel, setAiModel] = useState<string>("google/gemini-2.5-flash");
   const [ttsProvider, setTtsProvider] = useState<string>("edge-tts");
   const [voice, setVoice] = useState<string>("ja-JP-NanamiNeural");
+  const [proVoices, setProVoices] = useState<Array<{ voice_id: string; name: string; gender: string; description: string }>>([]);
+  const [proVoiceAvailable, setProVoiceAvailable] = useState<boolean>(false);
   const [slideDuration, setSlideDuration] = useState<number>(0);
   const [aspectRatio, setAspectRatio] = useState<string>("16:9");
   const [outputLanguage, setOutputLanguage] = useState<string>("");
@@ -66,6 +68,25 @@ export default function Home() {
       setVoice(defaultVoice);
     }
   }, [outputLanguage, ttsProvider]);
+
+  // プロ声優ボイス一覧を取得
+  useEffect(() => {
+    const fetchVoices = async () => {
+      try {
+        const res = await fetch(`${API_URL}/voices`, {
+          headers: { "ngrok-skip-browser-warning": "true" },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setProVoices(data.voices || []);
+          setProVoiceAvailable(data.available || false);
+        }
+      } catch {
+        // サーバー未起動等の場合は無視
+      }
+    };
+    fetchVoices();
+  }, [API_URL]);
 
   // F-11: ページ離脱対策 Lv1 — 処理中にページを閉じようとすると警告を表示
   useEffect(() => {
@@ -132,7 +153,7 @@ export default function Home() {
       if (aiProvider === "openrouter" && aiModel) {
         headers["X-AI-Model"] = aiModel;
       }
-      if (ttsProvider === "qwen-clone" && dashscopeKey) {
+      if ((ttsProvider === "openai" || ttsProvider === "qwen-clone" || ttsProvider === "elevenlabs" || ttsProvider === "azure" || ttsProvider === "google-cloud") && dashscopeKey) {
         headers["X-DashScope-Key"] = dashscopeKey;
       }
 
@@ -227,6 +248,10 @@ export default function Home() {
   const canGenerate = (() => {
     if (state !== "ready" || !file || !apiKey) return false;
     if (ttsProvider === "qwen-clone" && (!dashscopeKey || !voiceSample)) return false;
+    if (ttsProvider === "openai" && aiProvider !== "openai" && !dashscopeKey) return false;
+    if (ttsProvider === "elevenlabs" && !dashscopeKey) return false;
+    if (ttsProvider === "azure" && !dashscopeKey) return false;
+    if (ttsProvider === "google-cloud" && !dashscopeKey) return false;
     return true;
   })();
 
@@ -282,6 +307,8 @@ export default function Home() {
           onTtsProviderChange={setTtsProvider}
           voice={voice}
           onVoiceChange={setVoice}
+          proVoices={proVoices}
+          proVoiceAvailable={proVoiceAvailable}
           slideDuration={slideDuration}
           onSlideDurationChange={setSlideDuration}
           aspectRatio={aspectRatio}

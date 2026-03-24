@@ -42,6 +42,11 @@ ASPECT_RATIO_RESOLUTIONS = {
     "1:1": (1080, 1080),
 }
 
+# ─── RunPod GPU サーバー設定（声優ボイス用） ────────────
+RUNPOD_ENDPOINT_URL = os.getenv("RUNPOD_ENDPOINT_URL", "")
+RUNPOD_API_KEY = os.getenv("RUNPOD_API_KEY", "")
+RUNPOD_TIMEOUT_SECONDS = int(os.getenv("RUNPOD_TIMEOUT_SECONDS", "120"))
+
 # ─── Edge-TTS デフォルト設定 ─────────────────────────
 DEFAULT_VOICE = "ja-JP-NanamiNeural"
 DEFAULT_TTS_PROVIDER = "edge-tts"

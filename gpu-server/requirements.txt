@@ -1,0 +1,6 @@
+runpod>=1.6.0
+qwen-tts>=0.1.0
+torch>=2.1.0
+soundfile>=0.12.0
+numpy>=1.24.0
+huggingface_hub>=0.20.0

@@ -1,0 +1,10 @@
+# 声優音声データ（契約上の機密）
+voices/*/sample.wav
+voices/*/sample.mp3
+
+# モデルキャッシュ
+__pycache__/
+*.pyc
+
+# Docker ビルド
+.dockerignore

@@ -19,6 +19,7 @@ from config import (
     APP_VERSION, TEMP_DIR, FRONTEND_URL, MAX_PDF_SIZE_BYTES,
     JOB_CLEANUP_INTERVAL_SECONDS, DEFAULT_VOICE, DEFAULT_TTS_PROVIDER,
     DEFAULT_SLIDE_DURATION, DEFAULT_ASPECT_RATIO, ASPECT_RATIO_RESOLUTIONS,
+    RUNPOD_ENDPOINT_URL,
 )
 from services.job_manager import job_manager, Job
 from services.pdf_service import parse_pdf
@@ -89,7 +90,15 @@ async def run_generation(
         )
         await job.update("script_gen", 50, "全スライドの台本生成完了")
 
-        # 3. ボイスクローン（qwen-clone 選択時のみ）
+        # 3. 言語コードから言語名へのマッピング（RunPod TTS用）
+        language_names = {
+            "ja": "Japanese", "en": "English", "zh-CN": "Chinese",
+            "ko": "Korean", "fr": "French", "es": "Spanish",
+            "de": "German", "pt": "Portuguese", "auto": "Auto",
+        }
+        tts_language = language_names.get(output_language, "Japanese")
+
+        # 4. ボイスクローン（qwen-clone 選択時のみ）
         clone_voice_id = None
         if tts_provider == "qwen-clone":
             if not dashscope_api_key:
@@ -110,10 +119,21 @@ async def run_generation(
             pct = 55 + int((i / total) * 25) if tts_provider == "qwen-clone" else 50 + int((i / total) * 30)
             await job.update("tts", pct, f"スライド {page['page_number']}/{total} の音声生成中...")
 
-            audio_path = os.path.join(job.work_dir, f"audio_{page['page_number']}.mp3")
+            audio_ext = "wav" if tts_provider == "pro-voice" else "mp3"
+            audio_path = os.path.join(job.work_dir, f"audio_{page['page_number']}.{audio_ext}")
 
-            # OpenAI TTS の場合はAPIキーを渡す
-            openai_key = api_key if (tts_provider == "openai" and ai_provider == "openai") else None
+            # 有料 TTS の場合は X-DashScope-Key ヘッダーで渡された API キーを使用
+            openai_key = None
+            if tts_provider == "openai" and dashscope_api_key:
+                openai_key = dashscope_api_key
+            elif tts_provider == "openai" and ai_provider == "openai":
+                openai_key = api_key  # AI プロバイダーが OpenAI なら同じキーを流用
+            if tts_provider == "elevenlabs" and dashscope_api_key:
+                openai_key = dashscope_api_key  # ElevenLabs API キーは X-DashScope-Key ヘッダーで受け渡し
+            if tts_provider == "azure" and dashscope_api_key:
+                openai_key = dashscope_api_key  # Azure Speech キーは X-DashScope-Key ヘッダーで受け渡し
+            if tts_provider == "google-cloud" and dashscope_api_key:
+                openai_key = dashscope_api_key  # Google Cloud キーは X-DashScope-Key ヘッダーで受け渡し
 
             await generate_audio(
                 text=page["script"],
@@ -123,6 +143,8 @@ async def run_generation(
                 openai_api_key=openai_key,
                 dashscope_api_key=dashscope_api_key,
                 clone_voice_id=clone_voice_id,
+                pro_voice_id=voice if tts_provider == "pro-voice" else None,
+                language=tts_language,
             )
             page["audio_path"] = audio_path
 
@@ -163,7 +185,141 @@ async def run_generation(
 # ─── エンドポイント ───────────────────────────────────
 @app.get("/health")
 async def health():
-    return {"status": "ok", "version": APP_VERSION}
+    return {"status": "ok", "version": APP_VERSION, "pro_voice_available": bool(RUNPOD_ENDPOINT_URL)}
+
+
+@app.get("/voices")
+async def list_voices():
+    """利用可能な声優ボイス一覧を返す"""
+    from services.runpod_tts_service import get_pro_voices
+    try:
+        voices = await get_pro_voices()
+        return {"voices": voices, "available": bool(RUNPOD_ENDPOINT_URL)}
+    except Exception as e:
+        return {"voices": [], "available": False, "error": str(e)}
+
+
+@app.get("/elevenlabs/voices")
+async def list_elevenlabs_voices(
+    x_elevenlabs_key: Optional[str] = Header(None),
+    language: Optional[str] = Query(None),
+):
+    """ElevenLabs の利用可能な音声一覧を取得する"""
+    print(f"[ElevenLabs] Received key: {'yes' if x_elevenlabs_key else 'no'} (length: {len(x_elevenlabs_key) if x_elevenlabs_key else 0})")
+    if not x_elevenlabs_key:
+        raise HTTPException(status_code=422, detail="X-ElevenLabs-Key ヘッダーが必要です")
+
+    try:
+        import httpx
+        import asyncio
+
+        # 1. 自分のアカウントの音声を取得
+        def _fetch_my_voices():
+            resp = httpx.get(
+                "https://api.elevenlabs.io/v1/voices",
+                headers={"xi-api-key": x_elevenlabs_key},
+                timeout=30.0,
+            )
+            resp.raise_for_status()
+            return resp.json()
+
+        # 2. コミュニティ Voice Library から人気の音声を取得
+        def _fetch_shared_voices(lang: str = None, page_size: int = 100):
+            params = {
+                "page_size": page_size,
+                "sort": "trending",
+            }
+            if lang:
+                params["language"] = lang
+            resp = httpx.get(
+                "https://api.elevenlabs.io/v1/shared-voices",
+                params=params,
+                headers={"xi-api-key": x_elevenlabs_key},
+                timeout=30.0,
+            )
+            resp.raise_for_status()
+            return resp.json()
+
+        # 言語コードのマッピング
+        lang_map = {
+            "ja": "ja", "en": "en", "zh-CN": "zh", "ko": "ko",
+            "fr": "fr", "es": "es", "de": "de", "pt": "pt",
+        }
+        target_lang = lang_map.get(language, None)
+
+        my_data = await asyncio.to_thread(_fetch_my_voices)
+
+        # 指定言語の音声 + グローバル人気音声を両方取得
+        if target_lang:
+            lang_data = await asyncio.to_thread(lambda: _fetch_shared_voices(lang=target_lang, page_size=100))
+            global_data = await asyncio.to_thread(lambda: _fetch_shared_voices(lang=None, page_size=50))
+        else:
+            lang_data = {"voices": []}
+            global_data = await asyncio.to_thread(lambda: _fetch_shared_voices(lang=None, page_size=100))
+
+        voices = []
+        seen_ids = set()
+
+        # 自分の音声（優先表示）
+        for v in my_data.get("voices", []):
+            vid = v.get("voice_id", "")
+            if vid in seen_ids:
+                continue
+            seen_ids.add(vid)
+            labels = v.get("labels") or {}
+            voices.append({
+                "voice_id": vid,
+                "name": v.get("name", "Unknown"),
+                "gender": labels.get("gender", "unknown"),
+                "accent": labels.get("accent", ""),
+                "description": labels.get("description", ""),
+                "use_case": labels.get("use_case", ""),
+                "age": labels.get("age", ""),
+                "category": "my-voice",
+                "preview_url": v.get("preview_url", ""),
+            })
+
+        # 指定言語のコミュニティ音声（優先）
+        for v in lang_data.get("voices", []):
+            vid = v.get("voice_id", "")
+            if vid in seen_ids:
+                continue
+            seen_ids.add(vid)
+            voices.append({
+                "voice_id": vid,
+                "name": v.get("name", "Unknown"),
+                "gender": v.get("gender", "unknown"),
+                "accent": v.get("accent", ""),
+                "description": v.get("description", ""),
+                "use_case": v.get("use_case", ""),
+                "age": v.get("age", ""),
+                "category": "community-local",
+                "preview_url": v.get("preview_url", ""),
+            })
+
+        # グローバル人気音声
+        for v in global_data.get("voices", []):
+            vid = v.get("voice_id", "")
+            if vid in seen_ids:
+                continue
+            seen_ids.add(vid)
+            voices.append({
+                "voice_id": vid,
+                "name": v.get("name", "Unknown"),
+                "gender": v.get("gender", "unknown"),
+                "accent": v.get("accent", ""),
+                "description": v.get("description", ""),
+                "use_case": v.get("use_case", ""),
+                "age": v.get("age", ""),
+                "category": "community",
+                "preview_url": v.get("preview_url", ""),
+            })
+
+        return {"voices": voices, "count": len(voices)}
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=400, detail=f"ElevenLabs API エラー (HTTP {e.response.status_code}): {e.response.text[:300]}")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"ElevenLabs API エラー: {str(e)[:300]}")
 
 
 @app.post("/generate")

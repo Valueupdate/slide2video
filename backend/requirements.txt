@@ -7,3 +7,6 @@ edge-tts>=6.1.0
 google-genai>=1.0.0
 openai>=1.50.0
 Pillow>=10.0.0
+elevenlabs>=1.0.0
+azure-cognitiveservices-speech>=1.37.0
+google-cloud-texttospeech>=2.16.0
