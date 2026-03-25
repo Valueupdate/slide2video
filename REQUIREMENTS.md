@@ -215,9 +215,9 @@
 
 | # | タスク | 詳細 | 状態 |
 |---|--------|------|------|
-| T-01 | DNS 設定（サブドメイン） | ムームードメインで `slide2video.valueupdate.net` → `133.88.121.90` のAレコード追加 | 🔲 社長の2段階認証待ち |
-| T-02 | SSL 証明書（Let's Encrypt） | `certbot --nginx -d slide2video.valueupdate.net` で HTTPS 化 | 🔲 T-01 完了後 |
-| T-03 | `.env` 本番設定 | `FRONTEND_URL=https://slide2video.valueupdate.net` に変更 | 🔲 T-02 完了後 |
+| T-01 | DNS 設定（サブドメイン） | ドメインレジストラでサブドメインのAレコードをVPS IPに向ける | 🔲 管理者認証待ち |
+| T-02 | SSL 証明書（Let's Encrypt） | `certbot --nginx` で HTTPS 化 | 🔲 T-01 完了後 |
+| T-03 | `.env` 本番設定 | `FRONTEND_URL` を本番URLに変更 | 🔲 T-02 完了後 |
 | T-04 | page.tsx の ElevenLabs useEffect 修正 | `/voices` エンドポイント取得の useEffect が欠落 → 追加 | 🔲 未着手 |
 
 ### 3.2 運用基盤（1週間以内）
@@ -229,6 +229,9 @@
 | T-07 | 自動デプロイスクリプト作成 | `deploy.sh`（pull, install, build, restart を一括実行）を作成 | 🔲 未着手 |
 | T-08 | ログローテーション設定 | journalctl のログ肥大化防止。`/etc/systemd/journald.conf` で `SystemMaxUse=500M` 等 | 🔲 未着手 |
 | T-09 | 一時ファイル自動削除 | 生成済み動画・音声ファイルの定期削除（cron で24時間経過分を削除） | 🔲 未着手 |
+| T-20 | フッターに GitHub リンク追加 | ウェブサイトのフッターに GitHub リポジトリへのリンクを表示 | 🔲 未着手 |
+| T-21 | フッターに MIT License 表記 | フッターに「MIT License」と記載し GitHub の LICENSE ファイルにリンク | 🔲 未着手 |
+| T-22 | README.md に Live Demo URL 追加 | README 冒頭に公開サイトURLを記載 + GitHub リポジトリの About に Website URL を設定 | 🔲 未着手 |
 
 ### 3.3 機能改善（2〜4週間）
 
