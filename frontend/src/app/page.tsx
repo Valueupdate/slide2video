@@ -374,8 +374,12 @@ export default function Home() {
       <footer className="py-4 text-center text-sm text-muted-foreground border-t border-border space-y-2">
         <div>Slide2Video — スライドに声を、PDFに命を。</div>
         <div className="text-xs">APIキーはサーバーに保存されません。生成した動画は30分後に自動削除されます。</div>
-        <div className="text-xs">
+        <div className="text-xs space-x-3">
           <a href="/terms" className="text-blue-600 hover:underline">利用規約・免責事項</a>
+          <span>|</span>
+          <a href="https://github.com/Valueupdate/slide2video" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">GitHub</a>
+          <span>|</span>
+          <a href="https://github.com/Valueupdate/slide2video/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">MIT License</a>
         </div>
       </footer>
     </div>
