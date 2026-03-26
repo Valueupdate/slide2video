@@ -4,6 +4,8 @@
 
 **スライドに声を、PDFに命を。**
 
+🎬 **[ライブデモを試す → slide2video.valueupdate.jp](https://slide2video.valueupdate.jp)**
+
 PDFプレゼンテーションからAIナレーション付き動画を自動生成するWebアプリケーションです。
 
 ## 特徴
