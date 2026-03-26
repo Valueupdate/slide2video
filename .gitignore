@@ -53,3 +53,11 @@ testdata/
 # IDE
 .vscode/
 .idea/
+
+# 開発ログ・運用メモ（非公開）
+OPERATIONS.md
+
+# 開発ログ・運用メモ（非公開）
+DEVLOG.md
+OPERATIONS.md
+NOTES.md
