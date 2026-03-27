@@ -128,7 +128,7 @@ export const translations = {
 } as const;
 
 export type TranslationKey = keyof typeof translations.ja;
-export type Translations = typeof translations.ja;
+export type Translations = typeof translations.ja | typeof translations.en;
 
 export const SLIDE_DURATION_OPTIONS_I18N = {
   ja: [
