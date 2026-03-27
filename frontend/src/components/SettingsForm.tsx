@@ -10,6 +10,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState, useEffect, useCallback } from "react";
+import type { Lang, Translations } from "@/lib/i18n";
+import {
+  SLIDE_DURATION_OPTIONS_I18N,
+  ASPECT_RATIO_OPTIONS_I18N,
+  TTS_PROVIDER_OPTIONS_I18N,
+  AI_PROVIDER_OPTIONS_I18N,
+} from "@/lib/i18n";
 
 const DASHSCOPE_KEY_GUIDE = {
   url: "https://modelstudio.console.alibabacloud.com/?tab=playground#/api-key",
@@ -76,31 +83,15 @@ interface SettingsFormProps {
   proVoices: ProVoice[];
   proVoiceAvailable: boolean;
   disabled: boolean;
+  uiLang: Lang;
+  t: Translations;
 }
 
 const safeChange = (fn: (v: string) => void) => (v: string | null) => {
   if (v !== null) fn(v);
 };
 
-const SLIDE_DURATION_OPTIONS = [
-  { label: "自動（AI台本に合わせる）", value: "0" },
-  { label: "約15秒 / スライド", value: "15" },
-  { label: "約30秒 / スライド", value: "30" },
-  { label: "約45秒 / スライド", value: "45" },
-  { label: "約60秒 / スライド", value: "60" },
-];
 
-const ASPECT_RATIO_OPTIONS = [
-  { label: "横型 16:9（YouTube / PC）", value: "16:9" },
-  { label: "縦型 9:16（Shorts / TikTok / Reels）", value: "9:16" },
-  { label: "正方形 1:1（Instagram / SNS）", value: "1:1" },
-];
-
-const AI_PROVIDER_OPTIONS = [
-  { label: "Google Gemini", value: "gemini" },
-  { label: "OpenAI", value: "openai" },
-  { label: "OpenRouter（複数モデル対応）", value: "openrouter" },
-];
 
 const OPENROUTER_MODELS = [
   { label: "Gemini 2.5 Flash（Google）⭐ おすすめ", value: "google/gemini-2.5-flash" },
@@ -113,16 +104,7 @@ const OPENROUTER_MODELS = [
   { label: "Qwen 2.5 VL 72B（Alibaba）", value: "qwen/qwen2.5-vl-72b-instruct" },
 ];
 
-const TTS_PROVIDER_OPTIONS_BASE = [
-  { label: "Edge-TTS（無料）", value: "edge-tts" },
-  { label: "OpenAI TTS（有料・高品質）", value: "openai" },
-  { label: "ElevenLabs（高品質・多言語）", value: "elevenlabs" },
-  { label: "Azure Speech（Microsoft・無料枠大）", value: "azure" },
-  { label: "Google Cloud TTS（Google・無料枠大）", value: "google-cloud" },
-  { label: "ボイスクローン（自分の声で読み上げ）", value: "qwen-clone" },
-];
-
-const TTS_PROVIDER_OPTION_PRO = { label: "🎙️ プロ声優ボイス", value: "pro-voice" };
+const TTS_PROVIDER_OPTION_PRO = { label: "🎙️ Pro Voice Actor", value: "pro-voice" };
 
 const EDGE_TTS_VOICES_BY_LANG: Record<string, { label: string; value: string }[]> = {
   "ja": [
@@ -130,16 +112,16 @@ const EDGE_TTS_VOICES_BY_LANG: Record<string, { label: string; value: string }[]
     { label: "Keita（圭太・男性）", value: "ja-JP-KeitaNeural" },
   ],
   "en": [
-    { label: "Jenny（女性・アメリカ）", value: "en-US-JennyNeural" },
-    { label: "Guy（男性・アメリカ）", value: "en-US-GuyNeural" },
-    { label: "Aria（女性・ニュース）", value: "en-US-AriaNeural" },
-    { label: "Christopher（男性・ニュース）", value: "en-US-ChristopherNeural" },
-    { label: "Michelle（女性・フレンドリー）", value: "en-US-MichelleNeural" },
-    { label: "Roger（男性・明るい）", value: "en-US-RogerNeural" },
-    { label: "Sonia（女性・イギリス）", value: "en-GB-SoniaNeural" },
-    { label: "Ryan（男性・イギリス）", value: "en-GB-RyanNeural" },
-    { label: "Natasha（女性・オーストラリア）", value: "en-AU-NatashaNeural" },
-    { label: "William（男性・オーストラリア）", value: "en-AU-WilliamNeural" },
+    { label: "Jenny (Female・US)", value: "en-US-JennyNeural" },
+    { label: "Guy (Male・US)", value: "en-US-GuyNeural" },
+    { label: "Aria (Female・News)", value: "en-US-AriaNeural" },
+    { label: "Christopher (Male・News)", value: "en-US-ChristopherNeural" },
+    { label: "Michelle (Female・Friendly)", value: "en-US-MichelleNeural" },
+    { label: "Roger (Male・Cheerful)", value: "en-US-RogerNeural" },
+    { label: "Sonia (Female・UK)", value: "en-GB-SoniaNeural" },
+    { label: "Ryan (Male・UK)", value: "en-GB-RyanNeural" },
+    { label: "Natasha (Female・AU)", value: "en-AU-NatashaNeural" },
+    { label: "William (Male・AU)", value: "en-AU-WilliamNeural" },
   ],
   "zh-CN": [
     { label: "Xiaoxiao（女性・やさしい）", value: "zh-CN-XiaoxiaoNeural" },
@@ -270,7 +252,13 @@ export function SettingsForm({
   proVoices,
   proVoiceAvailable,
   disabled,
+  uiLang,
+  t,
 }: SettingsFormProps) {
+  const SLIDE_DURATION_OPTIONS = SLIDE_DURATION_OPTIONS_I18N[uiLang];
+  const ASPECT_RATIO_OPTIONS = ASPECT_RATIO_OPTIONS_I18N[uiLang];
+  const AI_PROVIDER_OPTIONS = AI_PROVIDER_OPTIONS_I18N[uiLang];
+  const TTS_PROVIDER_OPTIONS_BASE = TTS_PROVIDER_OPTIONS_I18N[uiLang];
   const [showKey, setShowKey] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [showDashscopeKey, setShowDashscopeKey] = useState(false);
@@ -380,11 +368,11 @@ export function SettingsForm({
 
   return (
     <Card className="p-5 space-y-4">
-      <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">設定</h2>
+      <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">{t.settingsTitle}</h2>
 
       {/* ── AI プロバイダー ── */}
       <div className="space-y-2">
-        <Label>AI プロバイダー</Label>
+        <Label>{t.aiProvider}</Label>
         <Select value={aiProvider} onValueChange={safeChange(onAiProviderChange)} disabled={disabled}>
           <SelectTrigger className="w-full">
             <SelectValue>{findLabel(AI_PROVIDER_OPTIONS, aiProvider)}</SelectValue>
@@ -400,7 +388,7 @@ export function SettingsForm({
       {/* ── OpenRouter モデル選択 ── */}
       {aiProvider === "openrouter" && (
         <div className="space-y-2">
-          <Label>モデル</Label>
+          <Label>{t.aiModel}</Label>
           <Select value={aiModel} onValueChange={safeChange(onAiModelChange)} disabled={disabled}>
             <SelectTrigger className="w-full">
               <SelectValue>{findLabel(OPENROUTER_MODELS, aiModel)}</SelectValue>
@@ -416,7 +404,7 @@ export function SettingsForm({
 
       {/* ── API キー ── */}
       <div className="space-y-2">
-        <Label>API キー</Label>
+        <Label>{t.apiKey}</Label>
         <div className="relative">
           <input
             type={showKey ? "text" : "password"}
@@ -445,7 +433,7 @@ export function SettingsForm({
         </div>
 
         <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">キーはサーバーに保存されません。リクエスト時のみ使用されます。</p>
+          <p className="text-xs text-muted-foreground">{t.apiKeyNote}</p>
 
           {aiProvider === "gemini" && (
             <p className="text-xs text-gray-500">
@@ -470,7 +458,7 @@ export function SettingsForm({
             <div className="text-xs">
               <button type="button" onClick={() => setShowGuide(!showGuide)} className="text-primary hover:underline font-medium inline-flex items-center gap-1">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                API キーの取得方法
+                {t.apiKeyGuide}
                 <svg className={`w-3 h-3 transition-transform ${showGuide ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
               </button>
               {showGuide && (
@@ -491,7 +479,7 @@ export function SettingsForm({
 
       {/* ── ナレーション言語 ── */}
       <div className="space-y-2">
-        <Label>ナレーション言語</Label>
+        <Label>{t.narrationLanguage}</Label>
         <Select value={outputLanguage} onValueChange={safeChange(onOutputLanguageChange)} disabled={disabled}>
           <SelectTrigger className="w-full">
             <SelectValue>{findLabel(OUTPUT_LANGUAGE_OPTIONS, outputLanguage)}</SelectValue>
@@ -502,12 +490,12 @@ export function SettingsForm({
             ))}
           </SelectContent>
         </Select>
-        <p className="text-xs text-muted-foreground">PDFの言語に関係なく、選択した言語でナレーション台本を生成します。</p>
+        <p className="text-xs text-muted-foreground">{t.narrationLanguageNote}</p>
       </div>
 
       {/* ── 音声合成エンジン ── */}
       <div className="space-y-2">
-        <Label>音声合成エンジン</Label>
+        <Label>{t.ttsEngine}</Label>
         <Select
           value={ttsProvider}
           onValueChange={safeChange((v) => {
@@ -568,7 +556,7 @@ export function SettingsForm({
       {/* ── 話者（ボイスクローン・声優以外） ── */}
       {ttsProvider !== "qwen-clone" && ttsProvider !== "pro-voice" && (
         <div className="space-y-2">
-          <Label>話者</Label>
+          <Label>{t.speaker}</Label>
           {ttsProvider === "elevenlabs" ? (
             <>
               {/* マイボイス（無料で使える音声）をコンボボックスに表示 */}
@@ -1015,11 +1003,11 @@ export function SettingsForm({
       )}
 
       <hr className="border-border" />
-      <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">動画設定</h2>
+      <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">{t.videoSettings}</h2>
 
       {/* ── スライド時間 ── */}
       <div className="space-y-2">
-        <Label>1スライドあたりの時間</Label>
+        <Label>{t.slideDuration}</Label>
         <Select value={String(slideDuration)} onValueChange={safeChange((v) => onSlideDurationChange(Number(v)))} disabled={disabled}>
           <SelectTrigger className="w-full">
             <SelectValue>{findLabel(SLIDE_DURATION_OPTIONS, String(slideDuration))}</SelectValue>
@@ -1030,12 +1018,12 @@ export function SettingsForm({
             ))}
           </SelectContent>
         </Select>
-        <p className="text-xs text-muted-foreground">AIが生成する台本の分量と動画の長さを調整します。</p>
+        <p className="text-xs text-muted-foreground">{t.slideDurationNote}</p>
       </div>
 
       {/* ── アスペクト比 ── */}
       <div className="space-y-2">
-        <Label>アスペクト比</Label>
+        <Label>{t.aspectRatio}</Label>
         <Select value={aspectRatio} onValueChange={safeChange(onAspectRatioChange)} disabled={disabled}>
           <SelectTrigger className="w-full">
             <SelectValue>{findLabel(ASPECT_RATIO_OPTIONS, aspectRatio)}</SelectValue>

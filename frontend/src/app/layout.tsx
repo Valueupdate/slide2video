@@ -15,8 +15,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className="dark">
-      <head>
+    <html lang="ja" className="dark" suppressHydrationWarning>
+      <body className="min-h-screen antialiased">
+        {children}
         {GA_ID && (
           <>
             <Script
@@ -33,9 +34,6 @@ export default function RootLayout({
             </Script>
           </>
         )}
-      </head>
-      <body className="min-h-screen antialiased">
-        {children}
       </body>
     </html>
   );

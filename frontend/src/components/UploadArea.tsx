@@ -2,15 +2,17 @@
 
 import { useCallback, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
+import type { Translations } from "@/lib/i18n";
 
 interface UploadAreaProps {
   file: File | null;
   onFileSelect: (file: File) => void;
   onRemoveFile: () => void;
   disabled: boolean;
+  t: Translations;
 }
 
-export function UploadArea({ file, onFileSelect, onRemoveFile, disabled }: UploadAreaProps) {
+export function UploadArea({ file, onFileSelect, onRemoveFile, disabled, t }: UploadAreaProps) {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -113,8 +115,8 @@ export function UploadArea({ file, onFileSelect, onRemoveFile, disabled }: Uploa
             </svg>
           </div>
           <div>
-            <p className="font-medium">PDFファイルをドラッグ＆ドロップ</p>
-            <p className="text-sm text-muted-foreground mt-1">またはクリックしてファイルを選択（最大50MB）</p>
+            <p className="font-medium">{t.uploadTitle}</p>
+            <p className="text-sm text-muted-foreground mt-1">{t.uploadSubtitle}</p>
           </div>
         </div>
       </Card>

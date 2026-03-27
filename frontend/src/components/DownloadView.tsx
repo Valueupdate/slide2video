@@ -3,13 +3,16 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
+import type { Translations } from "@/lib/i18n";
+
 interface DownloadViewProps {
   apiUrl: string;
   jobId: string;
   onReset: () => void;
+  t: Translations;
 }
 
-export function DownloadView({ apiUrl, jobId, onReset }: DownloadViewProps) {
+export function DownloadView({ apiUrl, jobId, onReset, t }: DownloadViewProps) {
   const downloadUrl = `${apiUrl}/download/${jobId}`;
 
   return (
@@ -20,9 +23,9 @@ export function DownloadView({ apiUrl, jobId, onReset }: DownloadViewProps) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <p className="font-semibold">動画の生成が完了しました</p>
+        <p className="font-semibold">{t.downloadComplete}</p>
         <p className="text-sm text-muted-foreground">
-          ダウンロードリンクは約30分間有効です
+          {t.downloadNote}
         </p>
       </div>
 
@@ -32,11 +35,11 @@ export function DownloadView({ apiUrl, jobId, onReset }: DownloadViewProps) {
             <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            動画をダウンロード
+            {t.downloadButton}
           </Button>
         </a>
         <Button variant="secondary" size="lg" onClick={onReset}>
-          新規作成
+          {t.newGeneration}
         </Button>
       </div>
     </Card>

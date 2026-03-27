@@ -4,15 +4,17 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useEffect, useRef } from "react";
 import type { LogEntry } from "@/app/page";
+import type { Translations } from "@/lib/i18n";
 
 interface ProgressViewProps {
   progress: number;
   logs: LogEntry[];
   isProcessing: boolean;
   errorMessage: string;
+  t: Translations;
 }
 
-const STEP_LABELS: Record<string, string> = {
+const STEP_LABELS_JA: Record<string, string> = {
   upload: "アップロード",
   pdf_parse: "PDF解析",
   script_gen: "台本生成",
@@ -22,7 +24,18 @@ const STEP_LABELS: Record<string, string> = {
   error: "エラー",
 };
 
-export function ProgressView({ progress, logs, isProcessing, errorMessage }: ProgressViewProps) {
+const STEP_LABELS_EN: Record<string, string> = {
+  upload: "Upload",
+  pdf_parse: "PDF Parse",
+  script_gen: "Script Gen",
+  tts: "TTS",
+  video_render: "Rendering",
+  done: "Done",
+  error: "Error",
+};
+
+export function ProgressView({ progress, logs, isProcessing, errorMessage, t }: ProgressViewProps) {
+  const STEP_LABELS = t.processing === "処理中..." ? STEP_LABELS_JA : STEP_LABELS_EN;
   const logEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,7 +47,7 @@ export function ProgressView({ progress, logs, isProcessing, errorMessage }: Pro
       <div className="space-y-2">
         <div className="flex justify-between items-center text-sm">
           <span className="font-medium">
-            {isProcessing ? "処理中..." : errorMessage ? "エラー" : "完了"}
+            {isProcessing ? t.processing : errorMessage ? t.errorLabel : t.completed}
           </span>
           <span className="text-muted-foreground">{Math.max(0, progress)}%</span>
         </div>

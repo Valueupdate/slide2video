@@ -1,7 +1,14 @@
-export function Header() {
+import type { Lang } from "@/lib/i18n";
+
+interface HeaderProps {
+  uiLang: Lang;
+  onLangChange: (lang: Lang) => void;
+}
+
+export function Header({ uiLang, onLangChange }: HeaderProps) {
   return (
     <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-      <div className="container mx-auto px-4 h-14 flex items-center">
+      <div className="container mx-auto px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <svg
             className="w-6 h-6 text-primary"
@@ -23,6 +30,12 @@ export function Header() {
           </svg>
           <span className="font-bold text-lg">Slide2Video</span>
         </div>
+        <button
+          onClick={() => onLangChange(uiLang === "ja" ? "en" : "ja")}
+          className="text-sm px-3 py-1 rounded-md border border-border hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+        >
+          {uiLang === "ja" ? "🇺🇸 English" : "🇯🇵 日本語"}
+        </button>
       </div>
     </header>
   );

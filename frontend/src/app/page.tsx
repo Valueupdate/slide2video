@@ -6,6 +6,7 @@ import { UploadArea } from "@/components/UploadArea";
 import { SettingsForm } from "@/components/SettingsForm";
 import { ProgressView } from "@/components/ProgressView";
 import { DownloadView } from "@/components/DownloadView";
+import { translations, type Lang } from "@/lib/i18n";
 
 export type AppState = "idle" | "ready" | "processing" | "done" | "error";
 
@@ -34,9 +35,18 @@ export default function Home() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [jobId, setJobId] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [uiLang, setUiLang] = useState<Lang>("ja");
   const abortRef = useRef<AbortController | null>(null);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+  const t = translations[uiLang];
+
+  // ブラウザの言語設定からUI言語を推定
+  useEffect(() => {
+    const browserLang = navigator.language || "ja";
+    const isEnglish = browserLang.startsWith("en");
+    setUiLang(isEnglish ? "en" : "ja");
+  }, []);
 
   // ブラウザの言語設定からデフォルト出力言語を推定
   useEffect(() => {
@@ -129,6 +139,17 @@ export default function Home() {
     setLogs([]);
     setErrorMessage("");
 
+    // GA4: 動画生成開始イベント
+    if (typeof window !== "undefined" && typeof (window as any).gtag === "function") {
+      (window as any).gtag("event", "generate_start", {
+        ai_provider: aiProvider,
+        tts_provider: ttsProvider,
+        output_language: outputLanguage,
+        aspect_ratio: aspectRatio,
+        slide_duration: slideDuration,
+      });
+    }
+
     try {
       addLog("upload", "PDFをアップロード中...");
       const formData = new FormData();
@@ -215,6 +236,16 @@ export default function Home() {
             if (event.step === "done") {
               setJobId(currentJobId);
               setState("done");
+              // GA4: 動画生成完了イベント
+              if (typeof window !== "undefined" && typeof (window as any).gtag === "function") {
+                (window as any).gtag("event", "generate_complete", {
+                  ai_provider: aiProvider,
+                  tts_provider: ttsProvider,
+                  output_language: outputLanguage,
+                  aspect_ratio: aspectRatio,
+                  slide_duration: slideDuration,
+                });
+              }
               return;
             }
             if (event.step === "error") {
@@ -257,24 +288,24 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      <Header uiLang={uiLang} onLangChange={setUiLang} />
 
       <main className="flex-1 container mx-auto px-4 py-8 max-w-2xl space-y-6">
         <div className="text-center space-y-3">
           <h1 className="text-3xl font-bold tracking-tight">
-            スライドに声を、PDFに命を。
+            {t.mainTitle}
           </h1>
           <p className="text-muted-foreground">
-            AIナレーション × 自動動画生成。あなたのPDFが、プロ品質のプレゼン動画になります。
+            {t.mainSubtitle}
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           {[
-            { icon: "🎓", title: "教育・研修", desc: "授業資料をオンデマンド教材に" },
-            { icon: "💼", title: "営業・提案", desc: "提案書を動画で開封率アップ" },
-            { icon: "📱", title: "SNS配信", desc: "縦型対応でShorts/Reelsに投稿" },
-            { icon: "🏢", title: "社内共有", desc: "手順書や議事録を動画で伝達" },
+            { icon: "🎓", title: t.useCaseEducation, desc: t.useCaseEducationDesc },
+            { icon: "💼", title: t.useCaseSales, desc: t.useCaseSalesDesc },
+            { icon: "📱", title: t.useCaseSNS, desc: t.useCaseSNSDesc },
+            { icon: "🏢", title: t.useCaseInternal, desc: t.useCaseInternalDesc },
           ].map((item) => (
             <div
               key={item.title}
@@ -294,6 +325,7 @@ export default function Home() {
           onFileSelect={handleFileSelect}
           onRemoveFile={handleRemoveFile}
           disabled={state === "processing"}
+          t={t}
         />
 
         <SettingsForm
@@ -320,16 +352,18 @@ export default function Home() {
           voiceSample={voiceSample}
           onVoiceSampleChange={setVoiceSample}
           disabled={state === "processing"}
+          uiLang={uiLang}
+          t={t}
         />
 
         {(state === "idle" || state === "ready") && (
           <div className="space-y-2">
             <p className="text-xs text-center text-muted-foreground">
-              「動画を生成する」を押すことで、
+              {t.termsNotice}
               <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                利用規約・免責事項
+                {t.termsLink}
               </a>
-              に同意したものとみなします。
+              {t.termsNoticeSuffix}
             </p>
             <button
               onClick={handleGenerate}
@@ -338,7 +372,7 @@ export default function Home() {
                 bg-primary text-primary-foreground hover:opacity-90
                 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              動画を生成する
+              {t.generateButton}
             </button>
           </div>
         )}
@@ -349,6 +383,7 @@ export default function Home() {
             logs={logs}
             isProcessing={state === "processing"}
             errorMessage={errorMessage}
+            t={t}
           />
         )}
 
@@ -357,6 +392,7 @@ export default function Home() {
             apiUrl={API_URL}
             jobId={jobId}
             onReset={handleReset}
+            t={t}
           />
         )}
 
@@ -366,16 +402,16 @@ export default function Home() {
             className="w-full py-3 rounded-lg font-semibold text-base
               bg-secondary text-secondary-foreground hover:opacity-90"
           >
-            最初からやり直す
+            {t.resetButton}
           </button>
         )}
       </main>
 
       <footer className="py-4 text-center text-sm text-muted-foreground border-t border-border space-y-2">
-        <div>Slide2Video — スライドに声を、PDFに命を。</div>
-        <div className="text-xs">APIキーはサーバーに保存されません。生成した動画は30分後に自動削除されます。</div>
+        <div>{t.footerTagline}</div>
+        <div className="text-xs">{t.footerPrivacy}</div>
         <div className="text-xs space-x-3">
-          <a href="/terms" className="text-blue-600 hover:underline">利用規約・免責事項</a>
+          <a href="/terms" className="text-blue-600 hover:underline">{t.footerTerms}</a>
           <span>|</span>
           <a href="https://github.com/Valueupdate/slide2video" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center gap-1">
             <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
@@ -384,7 +420,7 @@ export default function Home() {
           <span>|</span>
           <a href="https://github.com/Valueupdate/slide2video/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">MIT License</a>
           <span>|</span>
-          <a href="https://docs.google.com/forms/d/e/1FAIpQLSexZdYudG4t4kxAAJBhrfNv2o0c-hEWq7gyNqy3Ny0ue73wpg/viewform?usp=header" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">フィードバック / Feedback</a>
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSexZdYudG4t4kxAAJBhrfNv2o0c-hEWq7gyNqy3Ny0ue73wpg/viewform?usp=header" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{t.footerFeedback}</a>
         </div>
       </footer>
     </div>
