@@ -4,7 +4,7 @@
 
 **Give voice to your slides, bring life to your PDFs.**
 
-🎬 **[Try Live Demo → slide2video.valueupdate.jp](https://slide2video.valueupdate.jp)**
+🎬 **[Try Live Demo → slide2video.valueupdate.net](https://slide2video.valueupdate.net)**
 
 A web application that automatically generates AI-narrated presentation videos from PDF files.
 
