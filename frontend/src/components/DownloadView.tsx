@@ -98,6 +98,7 @@ export function DownloadView({ apiUrl, jobId, onReset, t, initialYoutubeVideoId 
 
           {showYoutubeHint && (
             <div className="space-y-3 pt-1">
+              <p className="text-xs text-yellow-500/80">{t.youtubeTransferComingSoon}</p>
               <p className="text-xs text-muted-foreground">{t.youtubeTransferNote}</p>
               {youtubeError && (
                 <p className="text-xs text-destructive">{youtubeError}</p>
