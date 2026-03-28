@@ -89,6 +89,12 @@ export const translations = {
     downloadNote: "ダウンロードリンクは約30分間有効です",
     downloadButton: "動画をダウンロード",
     newGeneration: "新規作成",
+    youtubeTransfer: "YouTube に転送する",
+    youtubeTransferNote: "Google アカウントで認証するだけで、あなたの YouTube チャンネルに動画が転送されます。転送後は非公開で保管されます。タイトル・説明文・公開設定・サムネイルは YouTube Studio で自由に編集できます。",
+    youtubeTransferComplete: "YouTube への転送が完了しました！",
+    youtubeTransferPrivateNote: "現在は非公開で保管されています。公開する場合は YouTube Studio で公開設定を変更してください。",
+    youtubeStudioButton: "YouTube Studio で編集する ↗",
+    youtubeWatchButton: "YouTube で確認する ↗",
   },
   en: {
     // Header
@@ -178,6 +184,12 @@ export const translations = {
     downloadNote: "The download link is valid for approximately 30 minutes.",
     downloadButton: "Download Video",
     newGeneration: "Create New",
+    youtubeTransfer: "Transfer to YouTube",
+    youtubeTransferNote: "Sign in with your Google account to transfer your video directly to your YouTube channel. The video will be saved as private. You can edit the title, description, visibility, and thumbnail in YouTube Studio afterward.",
+    youtubeTransferComplete: "Successfully transferred to YouTube!",
+    youtubeTransferPrivateNote: "Your video is currently saved as private. Go to YouTube Studio to change the visibility settings.",
+    youtubeStudioButton: "Edit in YouTube Studio ↗",
+    youtubeWatchButton: "View on YouTube ↗",
   },
 } as const;
 

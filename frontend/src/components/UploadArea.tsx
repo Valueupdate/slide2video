@@ -14,6 +14,7 @@ interface UploadAreaProps {
 
 export function UploadArea({ file, onFileSelect, onRemoveFile, disabled, t }: UploadAreaProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [showPptxHint, setShowPptxHint] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback(
@@ -89,8 +90,6 @@ export function UploadArea({ file, onFileSelect, onRemoveFile, disabled, t }: Up
       </Card>
     );
   }
-
-  const [showPptxHint, setShowPptxHint] = useState(false);
 
   return (
     <>
