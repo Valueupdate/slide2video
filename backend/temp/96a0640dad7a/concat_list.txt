@@ -1,2 +1,0 @@
-file 'C:/Users/harak/Documents/MyGit/work/20260318-video_generator/backend/temp/96a0640dad7a/segment_000.mp4'
-file 'C:/Users/harak/Documents/MyGit/work/20260318-video_generator/backend/temp/96a0640dad7a/segment_001.mp4'

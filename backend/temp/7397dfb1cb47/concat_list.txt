@@ -1,6 +1,0 @@
-file 'C:/Users/harak/Documents/MyGit/work/20260318-video_generator/backend/temp/7397dfb1cb47/segment_000.mp4'
-file 'C:/Users/harak/Documents/MyGit/work/20260318-video_generator/backend/temp/7397dfb1cb47/segment_001.mp4'
-file 'C:/Users/harak/Documents/MyGit/work/20260318-video_generator/backend/temp/7397dfb1cb47/segment_002.mp4'
-file 'C:/Users/harak/Documents/MyGit/work/20260318-video_generator/backend/temp/7397dfb1cb47/segment_003.mp4'
-file 'C:/Users/harak/Documents/MyGit/work/20260318-video_generator/backend/temp/7397dfb1cb47/segment_004.mp4'
-file 'C:/Users/harak/Documents/MyGit/work/20260318-video_generator/backend/temp/7397dfb1cb47/segment_005.mp4'
