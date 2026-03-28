@@ -193,34 +193,10 @@ const VOICE_OPTIONS: Record<string, { label: string; value: string }[]> = {
   elevenlabs: [],
 };
 
-const API_KEY_GUIDES: Record<string, { url: string; label: string; steps: string[] }> = {
-  gemini: {
-    url: "https://aistudio.google.com/apikey",
-    label: "Google AI Studio でキーを作成",
-    steps: [
-      "上のリンクから Google AI Studio を開く",
-      "Google アカウントでログイン",
-      "「APIキーを作成」をクリックしてコピー",
-    ],
-  },
-  openai: {
-    url: "https://platform.openai.com/api-keys",
-    label: "OpenAI ダッシュボードでキーを作成",
-    steps: [
-      "上のリンクから OpenAI のダッシュボードを開く",
-      "アカウント作成後「+ Create new secret key」をクリック",
-      "表示されたキーをコピー（クレジット購入が必要です）",
-    ],
-  },
-  openrouter: {
-    url: "https://openrouter.ai/keys",
-    label: "OpenRouter でキーを作成",
-    steps: [
-      "上のリンクから OpenRouter を開く",
-      "Google / GitHub アカウントでサインアップ",
-      "「Create Key」をクリックしてコピー（無料クレジットあり）",
-    ],
-  },
+const API_KEY_GUIDE_URLS: Record<string, string> = {
+  gemini: "https://aistudio.google.com/apikey",
+  openai: "https://platform.openai.com/api-keys",
+  openrouter: "https://openrouter.ai/keys",
 };
 
 /** value から対応するラベルを取得するヘルパー */
@@ -280,7 +256,15 @@ export function SettingsForm({
 
   const edgeVoicesForLang = EDGE_TTS_VOICES_BY_LANG[outputLanguage] || EDGE_TTS_VOICES_BY_LANG["ja"];
   const voices = ttsProvider === "edge-tts" ? edgeVoicesForLang : (VOICE_OPTIONS[ttsProvider] || edgeVoicesForLang);
-  const guide = API_KEY_GUIDES[aiProvider];
+  const guideUrl = API_KEY_GUIDE_URLS[aiProvider];
+  const guideLabel = aiProvider === "gemini" ? t.apiKeyGuideGeminiLabel : aiProvider === "openai" ? t.apiKeyGuideOpenaiLabel : aiProvider === "openrouter" ? t.apiKeyGuideOpenrouterLabel : "";
+  const guideSteps = aiProvider === "gemini"
+    ? [t.apiKeyGuideGeminiStep1, t.apiKeyGuideGeminiStep2, t.apiKeyGuideGeminiStep3]
+    : aiProvider === "openai"
+    ? [t.apiKeyGuideOpenaiStep1, t.apiKeyGuideOpenaiStep2, t.apiKeyGuideOpenaiStep3]
+    : aiProvider === "openrouter"
+    ? [t.apiKeyGuideOpenrouterStep1, t.apiKeyGuideOpenrouterStep2, t.apiKeyGuideOpenrouterStep3]
+    : [];
 
   const ttsProviderOptions = proVoiceAvailable
     ? [TTS_PROVIDER_OPTION_PRO, ...TTS_PROVIDER_OPTIONS_BASE]
@@ -437,24 +421,24 @@ export function SettingsForm({
 
           {aiProvider === "gemini" && (
             <p className="text-xs text-gray-500">
-              ℹ️ 無料枠のレート制限はプロジェクトにより異なります。
-              <a href="https://aistudio.google.com/rate-limit" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">AI Studio で確認 ↗</a>
+              ℹ️ {t.geminiRateLimit}
+              <a href="https://aistudio.google.com/rate-limit" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">{t.geminiRateLimitLink}</a>
             </p>
           )}
           {aiProvider === "openrouter" && (
             <p className="text-xs text-gray-500">
-              ℹ️ 利用状況と制限は OpenRouter ダッシュボードで確認できます。
-              <a href="https://openrouter.ai/activity" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">OpenRouter Activity で確認 ↗</a>
+              ℹ️ {t.openrouterUsage}
+              <a href="https://openrouter.ai/activity" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">{t.openrouterUsageLink}</a>
             </p>
           )}
           {aiProvider === "openai" && (
             <p className="text-xs text-gray-500">
-              ℹ️ 利用状況は OpenAI ダッシュボードで確認できます。
-              <a href="https://platform.openai.com/usage" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">Usage で確認 ↗</a>
+              ℹ️ {t.openaiUsage}
+              <a href="https://platform.openai.com/usage" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">{t.openaiUsageLink}</a>
             </p>
           )}
 
-          {guide && (
+          {guideUrl && (
             <div className="text-xs">
               <button type="button" onClick={() => setShowGuide(!showGuide)} className="text-primary hover:underline font-medium inline-flex items-center gap-1">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -463,12 +447,12 @@ export function SettingsForm({
               </button>
               {showGuide && (
                 <div className="mt-2 p-3 rounded-md bg-muted/50 border border-border space-y-2">
-                  <a href={guide.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium inline-flex items-center gap-1">
-                    {guide.label}
+                  <a href={guideUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium inline-flex items-center gap-1">
+                    {guideLabel}
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                   </a>
                   <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                    {guide.steps.map((step, i) => (<li key={i}>{step}</li>))}
+                    {guideSteps.map((step, i) => (<li key={i}>{step}</li>))}
                   </ol>
                 </div>
               )}
