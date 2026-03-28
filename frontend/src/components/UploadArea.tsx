@@ -90,6 +90,8 @@ export function UploadArea({ file, onFileSelect, onRemoveFile, disabled, t }: Up
     );
   }
 
+  const [showPptxHint, setShowPptxHint] = useState(false);
+
   return (
     <>
       <input
@@ -120,6 +122,41 @@ export function UploadArea({ file, onFileSelect, onRemoveFile, disabled, t }: Up
           </div>
         </div>
       </Card>
+
+      {/* PPTX変換案内 */}
+      <div
+        className="text-xs rounded-lg border border-border bg-muted/30 p-3 space-y-1"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={() => setShowPptxHint(!showPptxHint)}
+          className="w-full text-left flex items-center justify-between text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <span className="flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5 shrink-0 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {t.uploadPptxHintTitle}
+          </span>
+          <svg
+            className={`w-3 h-3 transition-transform ${showPptxHint ? "rotate-180" : ""}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {showPptxHint && (
+          <div className="pt-2 space-y-2 text-muted-foreground">
+            <p>{t.uploadPptxHintDesc}</p>
+            <ol className="list-decimal list-inside space-y-1 pl-1">
+              <li>{t.uploadPptxHintStep1}</li>
+              <li>{t.uploadPptxHintStep2}</li>
+              <li>{t.uploadPptxHintStep3}</li>
+            </ol>
+          </div>
+        )}
+      </div>
     </>
   );
 }

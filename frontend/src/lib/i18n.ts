@@ -39,6 +39,11 @@ export const translations = {
     // アップロード
     uploadTitle: "PDFファイルをドラッグ＆ドロップ",
     uploadSubtitle: "またはクリックしてファイルを選択（最大50MB）",
+    uploadPptxHintTitle: "PowerPoint（PPTX）をお持ちの場合",
+    uploadPptxHintDesc: "PowerPoint で「ファイル」→「名前を付けて保存」→「PDF」を選択してから アップロードしてください。LibreOffice などで変換するとレイアウトが崩れる場合があります。",
+    uploadPptxHintStep1: "PowerPoint でファイルを開く",
+    uploadPptxHintStep2: "「ファイル」→「名前を付けて保存」をクリック",
+    uploadPptxHintStep3: "ファイル形式で「PDF」を選択して保存",
 
     // 設定
     settingsTitle: "設定",
@@ -123,6 +128,11 @@ export const translations = {
     // Upload
     uploadTitle: "Drag & drop your PDF here",
     uploadSubtitle: "or click to select a file (max 50MB)",
+    uploadPptxHintTitle: "Have a PowerPoint (PPTX) file?",
+    uploadPptxHintDesc: "Please convert it to PDF before uploading. In PowerPoint, go to File → Save As → PDF. Converting with LibreOffice may cause layout issues.",
+    uploadPptxHintStep1: "Open your file in PowerPoint",
+    uploadPptxHintStep2: "Click \"File\" → \"Save As\"",
+    uploadPptxHintStep3: "Select \"PDF\" as the file format and save",
 
     // Settings
     settingsTitle: "Settings",
