@@ -10,11 +10,12 @@ interface DownloadViewProps {
   jobId: string;
   onReset: () => void;
   t: Translations;
+  initialYoutubeVideoId?: string | null;
 }
 
-export function DownloadView({ apiUrl, jobId, onReset, t }: DownloadViewProps) {
+export function DownloadView({ apiUrl, jobId, onReset, t, initialYoutubeVideoId = null }: DownloadViewProps) {
   const downloadUrl = `${apiUrl}/download/${jobId}`;
-  const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null);
+  const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(initialYoutubeVideoId);
   const [youtubeLoading, setYoutubeLoading] = useState(false);
   const [youtubeError, setYoutubeError] = useState("");
   const [showYoutubeHint, setShowYoutubeHint] = useState(false);
