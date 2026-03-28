@@ -1,5 +1,5 @@
 """
-Slide2Video バックエンド - エントリーポイント
+Slide2Video バックエンド - エントリーポイント (YouTube転送対応)
 
 PDFをアップロードすると、AI台本生成→音声合成→動画生成を一気通貫で実行し、
 MP4動画をダウンロードできるAPIサーバー。
@@ -9,11 +9,12 @@ import json
 import asyncio
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, UploadFile, File, Header, Form, Query, HTTPException, BackgroundTasks
-from fastapi.responses import StreamingResponse, FileResponse
+from fastapi import FastAPI, UploadFile, File, Header, Form, Query, HTTPException, BackgroundTasks, Request
+from fastapi.responses import StreamingResponse, FileResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from typing import Optional
+import secrets
 
 from config import (
     APP_VERSION, TEMP_DIR, FRONTEND_URL, EXTRA_CORS_ORIGINS, MAX_PDF_SIZE_BYTES,
@@ -21,6 +22,7 @@ from config import (
     DEFAULT_SLIDE_DURATION, DEFAULT_ASPECT_RATIO, ASPECT_RATIO_RESOLUTIONS,
     RUNPOD_ENDPOINT_URL,
 )
+from services.youtube_service import get_auth_url, exchange_code, upload_video
 from services.job_manager import job_manager, Job
 from services.pdf_service import parse_pdf
 from services.ai_service import generate_scripts
@@ -450,6 +452,34 @@ async def download(job_id: str):
         media_type="video/mp4",
         filename=f"slide2video_{job_id}.mp4",
     )
+
+
+# ─── YouTube OAuth ────────────────────────────────────
+@app.get("/youtube/auth/{job_id}")
+async def youtube_auth(job_id: str):
+    state = f"{job_id}:{secrets.token_urlsafe(16)}"
+    return {"auth_url": get_auth_url(state)}
+
+
+@app.get("/youtube/callback")
+async def youtube_callback(code: str, state: str):
+    job_id = state.split(":")[0]
+    access_token = await exchange_code(code)
+
+    video_path = os.path.join(TEMP_DIR, job_id, f"{job_id}.mp4")
+    title = f"Slide2Video – {job_id}"
+    video_id = await upload_video(access_token, video_path, title)
+
+    return RedirectResponse(
+        f"{FRONTEND_URL}?youtube_video_id={video_id}&job_id={job_id}"
+    )
+
+
+@app.post("/youtube/upload/{job_id}")
+async def youtube_upload(job_id: str):
+    state = f"{job_id}:{secrets.token_urlsafe(16)}"
+    auth_url = get_auth_url(state)
+    return {"auth_url": auth_url}
 
 
 # ─── フロントエンド静的ファイル配信 ───────────────────
