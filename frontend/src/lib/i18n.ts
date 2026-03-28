@@ -12,12 +12,16 @@ export const translations = {
     // ユースケース
     useCaseEducation: "教育・研修",
     useCaseEducationDesc: "授業資料をオンデマンド教材に",
+    useCaseEducationScenario: "研修用PDFをアップロードするだけで、AIがナレーション付き解説動画を自動生成。受講者はいつでも繰り返し視聴でき、理解度が上がります。",
     useCaseSales: "営業・提案",
     useCaseSalesDesc: "提案書を動画で開封率アップ",
+    useCaseSalesScenario: "提案書PDFを動画化してメールに添付。文字を読まなくても内容が伝わるため、商談前の理解促進・開封率向上に効果的です。",
     useCaseSNS: "SNS配信",
     useCaseSNSDesc: "縦型対応でShorts/Reelsに投稿",
+    useCaseSNSScenario: "セミナー資料や会社紹介PDFを縦型動画に変換。YouTube Shorts・TikTok・Instagram Reels にそのまま投稿できます。",
     useCaseInternal: "社内共有",
     useCaseInternalDesc: "手順書や議事録を動画で伝達",
+    useCaseInternalScenario: "業務マニュアルや手順書PDFを動画化。Slack・Teams で共有すれば、読まれない資料が「見てもらえるコンテンツ」に変わります。",
 
     // 生成ボタン
     generateButton: "動画を生成する",
@@ -92,12 +96,16 @@ export const translations = {
     // Use cases
     useCaseEducation: "Education",
     useCaseEducationDesc: "Turn lecture materials into on-demand content",
+    useCaseEducationScenario: "Upload your training PDF and let AI generate a narrated video automatically. Learners can watch and rewatch at their own pace, improving comprehension.",
     useCaseSales: "Sales & Proposals",
     useCaseSalesDesc: "Boost open rates with video proposals",
+    useCaseSalesScenario: "Turn your proposal PDF into a video and attach it to emails. Prospects understand your pitch without reading — boosting engagement before meetings.",
     useCaseSNS: "Social Media",
     useCaseSNSDesc: "Portrait mode for Shorts / Reels",
+    useCaseSNSScenario: "Convert seminar slides or company intro PDFs into portrait videos. Ready to post on YouTube Shorts, TikTok, and Instagram Reels.",
     useCaseInternal: "Internal Sharing",
     useCaseInternalDesc: "Share manuals and minutes as videos",
+    useCaseInternalScenario: "Turn operation manuals and procedure PDFs into videos. Share on Slack or Teams — unread documents become content people actually watch.",
 
     // Buttons
     generateButton: "Generate Video",

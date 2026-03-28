@@ -16,7 +16,7 @@ export interface LogEntry {
   timestamp: Date;
 }
 
-function UseCaseCards({ t }: { t: import("@/lib/i18n").Translations }) {
+function UseCaseCards({ t }: { t: typeof import("@/lib/i18n").translations.ja }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const cases = [
     { icon: "🎓", title: t.useCaseEducation, desc: t.useCaseEducationDesc, scenario: t.useCaseEducationScenario },
