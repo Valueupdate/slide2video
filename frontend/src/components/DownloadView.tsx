@@ -27,17 +27,18 @@ export function DownloadView({ apiUrl, jobId, onReset, t }: DownloadViewProps) {
         method: "POST",
         headers: { "ngrok-skip-browser-warning": "true" },
       });
-      if (!res.ok) {
-        const err = await res.json();
-        // OAuth認証が必要な場合はリダイレクト
-        if (res.status === 401 && err.auth_url) {
-          window.location.href = err.auth_url;
-          return;
-        }
-        throw new Error(err.detail || "転送に失敗しました");
-      }
       const data = await res.json();
-      setYoutubeVideoId(data.video_id);
+      if (!res.ok) {
+        throw new Error(data.detail || "転送に失敗しました");
+      }
+      // auth_url が返ってきた場合は OAuth 認証へリダイレクト
+      if (data.auth_url) {
+        window.location.href = data.auth_url;
+        return;
+      }
+      if (data.video_id) {
+        setYoutubeVideoId(data.video_id);
+      }
     } catch (e) {
       setYoutubeError(e instanceof Error ? e.message : "エラーが発生しました");
     } finally {
