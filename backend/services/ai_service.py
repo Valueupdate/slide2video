@@ -200,8 +200,11 @@ async def generate_scripts(
     for group_idx, group in enumerate(groups):
         if progress_callback:
             pct = 10 + int((processed_pages / total) * 40)
-            page_range = f"{group[0]['page_number']}〜{group[-1]['page_number']}"
-            await progress_callback(pct, f"スライド {page_range}/{total} の台本生成中（バッチ {group_idx + 1}/{total_groups}）...")
+            page_range = f"{group[0]['page_number']}-{group[-1]['page_number']}"
+            if output_language in ("ja", "auto"):
+                await progress_callback(pct, f"スライド {page_range}/{total} の台本生成中（バッチ {group_idx + 1}/{total_groups}）...")
+            else:
+                await progress_callback(pct, f"Generating script for slides {page_range}/{total} (batch {group_idx + 1}/{total_groups})...")
 
         # Gemini無料枠のレート制限対策
         if group_idx > 0 and ai_provider == "gemini":
@@ -227,7 +230,10 @@ async def generate_scripts(
         for page in group:
             if progress_callback:
                 pct = 10 + int((processed_pages / total) * 40)
-                await progress_callback(pct, f"スライド {page['page_number']}/{total} の台本生成中（個別）...")
+                if output_language in ("ja", "auto"):
+                    await progress_callback(pct, f"スライド {page['page_number']}/{total} の台本生成中（個別）...")
+                else:
+                    await progress_callback(pct, f"Generating script for slide {page['page_number']}/{total} (individual)...")
 
             if processed_pages > 0 and ai_provider == "gemini":
                 await asyncio.sleep(4)
@@ -331,7 +337,10 @@ async def _generate_scripts_single(
         page_num = page["page_number"]
         if progress_callback:
             pct = 10 + int((i / total) * 40)
-            await progress_callback(pct, f"スライド {page_num}/{total} の台本生成中...")
+            if output_language in ("ja", "auto"):
+                await progress_callback(pct, f"スライド {page_num}/{total} の台本生成中...")
+            else:
+                await progress_callback(pct, f"Generating script for slide {page_num}/{total}...")
 
         if i > 0 and ai_provider == "gemini":
             await asyncio.sleep(4)

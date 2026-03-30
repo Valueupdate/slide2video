@@ -206,7 +206,7 @@ export default function Home() {
     }
 
     try {
-      addLog("upload", "PDFをアップロード中...");
+      addLog("upload", t.uploadingPdf);
       const formData = new FormData();
       formData.append("file", file);
       formData.append("voice", voice);
@@ -241,13 +241,13 @@ export default function Home() {
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.detail || "アップロードに失敗しました");
+        throw new Error(err.detail || t.uploadFailed);
       }
 
       const data = await res.json();
       const currentJobId = data.job_id;
       setJobId(currentJobId);
-      addLog("upload", `ジョブ開始: ${currentJobId}`);
+      addLog("upload", `${t.jobStarted}${currentJobId}`);
 
       const abort = new AbortController();
       abortRef.current = abort;
@@ -260,7 +260,7 @@ export default function Home() {
       });
 
       if (!eventRes.ok || !eventRes.body) {
-        throw new Error("進捗の取得に失敗しました");
+        throw new Error(t.progressFailed);
       }
 
       const reader = eventRes.body.getReader();
@@ -304,7 +304,7 @@ export default function Home() {
               return;
             }
             if (event.step === "error") {
-              throw new Error(event.message || "処理中にエラーが発生しました");
+              throw new Error(event.message || t.processingError);
             }
           } catch (parseErr) {
             if (parseErr instanceof SyntaxError) continue;
@@ -314,7 +314,7 @@ export default function Home() {
       }
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === "AbortError") return;
-      const message = err instanceof Error ? err.message : "不明なエラー";
+      const message = err instanceof Error ? err.message : t.unknownError;
       setErrorMessage(message);
       addLog("error", message);
       setState("error");

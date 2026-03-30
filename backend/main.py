@@ -76,21 +76,37 @@ async def run_generation(
 ):
     """バックグラウンドで動画生成パイプラインを実行する"""
     try:
+        # 言語に応じたログメッセージ
+        is_ja = output_language in ("ja", "auto")
+        msg = {
+            "pdf_parsing":      "PDF解析中..."                if is_ja else "Parsing PDF...",
+            "pdf_done":         "PDF解析完了 ({n}ページ検出)" if is_ja else "PDF parsed ({n} pages detected)",
+            "script_done":      "全スライドの台本生成完了"     if is_ja else "All slide scripts generated",
+            "voice_clone":      "ボイスクローン作成中（音声サンプルを解析しています）..." if is_ja else "Creating voice clone (analyzing audio sample)...",
+            "voice_clone_done": "ボイスクローン作成完了（ID: {id}...）" if is_ja else "Voice clone created (ID: {id}...)",
+            "tts":              "スライド {n}/{total} の音声生成中..." if is_ja else "Generating audio for slide {n}/{total}...",
+            "tts_done":         "音声生成完了"                if is_ja else "Audio generation complete",
+            "render_start":     "動画レンダリング開始 ({n}スライド, {ratio})" if is_ja else "Video rendering started ({n} slides, {ratio})",
+            "render_segment":   "スライド {n}/{total} をレンダリング中... ({dur:.1f}秒)" if is_ja else "Rendering slide {n}/{total}... ({dur:.1f}s)",
+            "render_concat":    "動画セグメントを結合中... ({total}スライド分)" if is_ja else "Concatenating video segments... ({total} slides)",
+            "render_done":      "動画レンダリング完了"         if is_ja else "Video rendering complete",
+        }
+
         # 1. PDF解析
-        await job.update("pdf_parse", 5, "PDF解析中...")
+        await job.update("pdf_parse", 5, msg["pdf_parsing"])
         pages = parse_pdf(pdf_path, job.work_dir)
-        await job.update("pdf_parse", 10, f"PDF解析完了 ({len(pages)}ページ検出)")
+        await job.update("pdf_parse", 10, msg["pdf_done"].format(n=len(pages)))
 
         # 2. AI台本生成
-        async def script_progress(pct, msg):
-            await job.update("script_gen", pct, msg)
+        async def script_progress(pct, m):
+            await job.update("script_gen", pct, m)
 
         pages = await generate_scripts(
             pages, ai_provider, api_key, script_progress,
             ai_model=ai_model, target_duration=slide_duration,
             output_language=output_language,
         )
-        await job.update("script_gen", 50, "全スライドの台本生成完了")
+        await job.update("script_gen", 50, msg["script_done"])
 
         # 3. 言語コードから言語名へのマッピング（RunPod TTS用）
         language_names = {
@@ -108,18 +124,18 @@ async def run_generation(
             if not voice_sample_path or not os.path.exists(voice_sample_path):
                 raise Exception("ボイスクローンには音声サンプルファイルが必要です")
 
-            await job.update("voice_clone", 52, "ボイスクローン作成中（音声サンプルを解析しています）...")
+            await job.update("voice_clone", 52, msg["voice_clone"])
             clone_voice_id = await create_clone_voice(
                 audio_path=voice_sample_path,
                 api_key=dashscope_api_key,
             )
-            await job.update("voice_clone", 55, f"ボイスクローン作成完了（ID: {clone_voice_id[:16]}...）")
+            await job.update("voice_clone", 55, msg["voice_clone_done"].format(id=clone_voice_id[:16]))
 
         # 4. 音声合成
         total = len(pages)
         for i, page in enumerate(pages):
             pct = 55 + int((i / total) * 25) if tts_provider == "qwen-clone" else 50 + int((i / total) * 30)
-            await job.update("tts", pct, f"スライド {page['page_number']}/{total} の音声生成中...")
+            await job.update("tts", pct, msg["tts"].format(n=page['page_number'], total=total))
 
             audio_ext = "wav" if tts_provider == "pro-voice" else "mp3"
             audio_path = os.path.join(job.work_dir, f"audio_{page['page_number']}.{audio_ext}")
@@ -150,19 +166,19 @@ async def run_generation(
             )
             page["audio_path"] = audio_path
 
-        await job.update("tts", 80, "音声生成完了")
+        await job.update("tts", 80, msg["tts_done"])
 
         # 5. 動画生成
         resolution = ASPECT_RATIO_RESOLUTIONS.get(aspect_ratio, (1920, 1080))
         total_pages = len(pages)
-        await job.update("video_render", 82, f"動画レンダリング開始 ({total_pages}スライド, {aspect_ratio})")
+        await job.update("video_render", 82, msg["render_start"].format(n=total_pages, ratio=aspect_ratio))
 
         async def video_progress(current, total, duration, concat=False):
             if concat:
-                await job.update("video_render", 93, f"動画セグメントを結合中... ({total}スライド分)")
+                await job.update("video_render", 93, msg["render_concat"].format(total=total))
             else:
-                pct = 82 + int((current / total) * 10)  # 82〜92%
-                await job.update("video_render", pct, f"スライド {current}/{total} をレンダリング中... ({duration:.1f}秒)")
+                pct = 82 + int((current / total) * 10)
+                await job.update("video_render", pct, msg["render_segment"].format(n=current, total=total, dur=duration))
 
         output_path = os.path.join(job.work_dir, f"{job.job_id}.mp4")
         await generate_video(
@@ -171,7 +187,7 @@ async def run_generation(
             min_duration=slide_duration,
             progress_callback=video_progress,
         )
-        await job.update("video_render", 95, "動画レンダリング完了")
+        await job.update("video_render", 95, msg["render_done"])
 
         # 6. 完了
         download_url = f"/download/{job.job_id}"
