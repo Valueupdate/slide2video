@@ -7,6 +7,9 @@ const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "";
 export const metadata: Metadata = {
   title: "Slide2Video - PDFからプレゼン動画を自動生成",
   description: "スライドPDFをアップロードするだけで、AIがナレーション付きプレゼンテーション動画を自動生成します。",
+  verification: {
+    google: "4iKPB_Won1NkHKt-pDWZkLWS-O3FHFi3sc2MD0S4TQ0",
+  },
 };
 
 export default function RootLayout({
