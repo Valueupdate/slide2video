@@ -10,7 +10,7 @@ export default function TermsPage() {
       </header>
 
       <main className="flex-1 container mx-auto px-4 py-8 max-w-2xl prose prose-sm dark:prose-invert">
-        <h1>利用規約・免責事項 / Terms of Service</h1>
+        <h1>利用規約・ / Terms of Service</h1>
         <p className="text-muted-foreground text-sm">
           最終更新日 / Last updated: 2026年3月30日
         </p>
@@ -87,7 +87,7 @@ export default function TermsPage() {
           Uploaded PDF files and generated audio/video files are temporarily stored on the server but are automatically deleted within 30 minutes after generation. Deletion may be delayed due to communication or system failures.
         </p>
 
-        <h2>9. 免責事項 / Disclaimer</h2>
+        <h2>9.  / Disclaimer</h2>
         <p>
           本サービスの利用により生じたいかなる損害（APIキーの不正利用、著作権侵害、生成コンテンツによる損害等を含むがこれに限定されない）についても、本サービスの運営者は一切の責任を負いません。
         </p>

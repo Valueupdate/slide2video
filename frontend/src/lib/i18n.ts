@@ -34,6 +34,7 @@ export const translations = {
     footerTagline: "Slide2Video — スライドに声を、PDFに命を。",
     footerPrivacy: "APIキーはサーバーに保存されません。生成した動画は30分後に自動削除されます。",
     footerTerms: "利用規約・免責事項",
+    footerPrivacyLink: "プライバシーポリシー",
     footerFeedback: "フィードバック / Feedback",
 
     // アップロード
@@ -136,6 +137,7 @@ export const translations = {
     footerTagline: "Slide2Video — Give voice to your slides, bring life to your PDFs.",
     footerPrivacy: "API keys are never stored on the server. Generated videos are auto-deleted after 30 minutes.",
     footerTerms: "Terms of Service",
+    footerPrivacyLink: "Privacy Policy",
     footerFeedback: "Feedback",
 
     // Upload
