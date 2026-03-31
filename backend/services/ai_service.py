@@ -59,14 +59,14 @@ IMPORTANT: Always include the ---SLIDE_N--- separator. Output script text only. 
 # 出力言語の設定
 OUTPUT_LANGUAGES = {
     "auto": {"label": "原文のまま（自動判定）", "instruction": "- スライドの原文と同じ言語で台本を作成してください。"},
-    "ja": {"label": "日本語", "instruction": "- 台本は必ず日本語で作成してください。スライドが他の言語の場合は日本語に翻訳してください。"},
+    "ja": {"label": "日本語", "instruction": "- 台本は必ず流暢で自然な日本語で作成してください。プロのプレゼンテーションに適した表現を使ってください。スライドが他の言語の場合は日本語に翻訳してください。同じ文や表現を繰り返さず、各文を完結させてください。"},
     "en": {"label": "English", "instruction": "- The script MUST be written in fluent, natural English suitable for a professional presentation. If the slides are in another language, translate the content into English. Avoid repetition and ensure every sentence is complete."},
-    "zh-CN": {"label": "中文（简体）", "instruction": "- 台本必须用简体中文撰写。如果幻灯片是其他语言，请翻译成中文。"},
-    "ko": {"label": "한국어", "instruction": "- 대본은 반드시 한국어로 작성하세요. 슬라이드가 다른 언어인 경우 한국어로 번역하세요。"},
-    "fr": {"label": "Français", "instruction": "- Le script DOIT être rédigé en français. Si les diapositives sont dans une autre langue, traduisez en français."},
-    "es": {"label": "Español", "instruction": "- El guión DEBE estar escrito en español. Si las diapositivas están en otro idioma, tradúzcalas al español."},
-    "de": {"label": "Deutsch", "instruction": "- Das Skript MUSS auf Deutsch verfasst werden. Falls die Folien in einer anderen Sprache sind, übersetzen Sie ins Deutsche."},
-    "pt": {"label": "Português", "instruction": "- O roteiro DEVE ser escrito em português. Se os slides estiverem em outro idioma, traduza para português."},
+    "zh-CN": {"label": "中文（简体）", "instruction": "- 台本必须用流畅自然的简体中文撰写，适合专业演示场合。如果幻灯片是其他语言，请翻译成中文。不得重复句子，每句话必须完整。"},
+    "ko": {"label": "한국어", "instruction": "- 대본은 반드시 자연스럽고 유창한 한국어로 작성하세요. 전문 발표에 적합한 표현을 사용하세요. 슬라이드가 다른 언어인 경우 한국어로 번역하세요. 문장을 반복하지 말고 각 문장을 완전하게 작성하세요."},
+    "fr": {"label": "Français", "instruction": "- Le script DOIT être rédigé en français courant et naturel, adapté à une présentation professionnelle. Si les diapositives sont dans une autre langue, traduisez en français. Ne répétez pas les phrases et assurez-vous que chaque phrase est complète."},
+    "es": {"label": "Español", "instruction": "- El guión DEBE estar escrito en español fluido y natural, adecuado para una presentación profesional. Si las diapositivas están en otro idioma, tradúzcalas al español. No repita frases y asegúrese de que cada oración esté completa."},
+    "de": {"label": "Deutsch", "instruction": "- Das Skript MUSS auf fließendem, natürlichem Deutsch verfasst werden, das für eine professionelle Präsentation geeignet ist. Falls die Folien in einer anderen Sprache sind, übersetzen Sie ins Deutsche. Wiederholen Sie keine Sätze und stellen Sie sicher, dass jeder Satz vollständig ist."},
+    "pt": {"label": "Português", "instruction": "- O roteiro DEVE ser escrito em português fluente e natural, adequado para uma apresentação profissional. Se os slides estiverem em outro idioma, traduza para português. Não repita frases e certifique-se de que cada frase esteja completa."},
 }
 
 
