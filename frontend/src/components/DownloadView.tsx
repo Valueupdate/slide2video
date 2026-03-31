@@ -51,6 +51,7 @@ export function DownloadView({ apiUrl, jobId, onReset, onRegenerate, t, initialY
 
   return (
     <Card className="p-5 space-y-4">
+      {/* 完了メッセージ */}
       <div className="text-center space-y-2">
         <div className="w-12 h-12 mx-auto bg-green-500/15 rounded-full flex items-center justify-center">
           <svg className="w-6 h-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -69,133 +70,121 @@ export function DownloadView({ apiUrl, jobId, onReset, onRegenerate, t, initialY
         style={{ maxHeight: "240px" }}
       />
 
-      {/* ダウンロード・新規作成ボタン */}
-      <div className="flex gap-3">
-        <a
-          href={downloadUrl}
-          download
-          className="flex-1"
-          onClick={() => setDownloaded(true)}
-        >
-          <Button className={`w-full ${downloaded ? "bg-green-600 hover:bg-green-700" : ""}`} size="lg">
-            {downloaded ? (
+      {/* 保存・共有セクション */}
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t.saveShareSection}</p>
+        <div className="flex gap-3">
+          {/* ダウンロードボタン */}
+          <a
+            href={downloadUrl}
+            download
+            className="flex-1"
+            onClick={() => setDownloaded(true)}
+          >
+            <Button className={`w-full ${downloaded ? "bg-green-600 hover:bg-green-700" : ""}`} size="lg">
+              {downloaded ? (
+                <>
+                  <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  {t.downloadedButton}
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  {t.downloadButton}
+                </>
+              )}
+            </Button>
+          </a>
+
+          {/* 共有ボタン */}
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => setShowYoutubeHint(!showYoutubeHint)}
+            className="flex-1"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+            {t.shareButton}
+          </Button>
+        </div>
+
+        {/* 共有先メニュー */}
+        {showYoutubeHint && (
+          <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-3">
+            {!youtubeVideoId ? (
               <>
-                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                {t.downloadedButton}
+                <p className="text-xs font-medium text-muted-foreground">{t.shareDestination}</p>
+                <p className="text-xs text-yellow-500/80">{t.youtubeTransferComingSoon}</p>
+                <p className="text-xs text-muted-foreground">{t.youtubeTransferNote}</p>
+                {youtubeError && (
+                  <p className="text-xs text-destructive">{youtubeError}</p>
+                )}
+                <Button
+                  variant="outline"
+                  className="w-full border-red-500/50 text-red-500 hover:bg-red-500/10"
+                  onClick={handleYoutubeTransfer}
+                  disabled={youtubeLoading}
+                >
+                  <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                  {youtubeLoading ? t.sharingInProgress : t.youtubeTransfer}
+                </Button>
               </>
             ) : (
-              <>
-                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                {t.downloadButton}
-              </>
+              /* YouTube共有完了 */
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-green-500 flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  {t.youtubeTransferComplete}
+                </p>
+                <p className="text-xs text-muted-foreground font-mono">
+                  https://www.youtube.com/watch?v={youtubeVideoId}
+                </p>
+                <p className="text-xs text-muted-foreground">{t.youtubeTransferPrivateNote}</p>
+                <div className="flex gap-2">
+                  <a href={`https://studio.youtube.com/video/${youtubeVideoId}/edit`} target="_blank" rel="noopener noreferrer" className="flex-1">
+                    <Button variant="outline" size="sm" className="w-full text-xs">{t.youtubeStudioButton}</Button>
+                  </a>
+                  <a href={`https://www.youtube.com/watch?v=${youtubeVideoId}`} target="_blank" rel="noopener noreferrer" className="flex-1">
+                    <Button variant="outline" size="sm" className="w-full text-xs">{t.youtubeWatchButton}</Button>
+                  </a>
+                </div>
+              </div>
             )}
-          </Button>
-        </a>
-        <Button variant="secondary" size="lg" onClick={onReset}>
-          {t.newGeneration}
-        </Button>
-      </div>
-
-      {/* 再生成ボタン */}
-      <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-1">
-        <p className="text-xs text-muted-foreground text-center">{t.regenerateNote}</p>
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={() => {
-            if (downloaded || window.confirm(t.regenerateConfirm)) {
-              onRegenerate();
-            }
-          }}
-        >
-          {t.regenerateButton}
-        </Button>
-      </div>
-
-      {/* YouTube転送セクション */}
-      {!youtubeVideoId ? (
-        <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
-          <button
-            type="button"
-            onClick={() => setShowYoutubeHint(!showYoutubeHint)}
-            className="w-full text-left flex items-center justify-between text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <span className="flex items-center gap-2 font-medium">
-              <svg className="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-              </svg>
-              {t.youtubeTransfer}
-            </span>
-            <svg
-              className={`w-3 h-3 transition-transform ${showYoutubeHint ? "rotate-180" : ""}`}
-              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          {showYoutubeHint && (
-            <div className="space-y-3 pt-1">
-              <p className="text-xs text-yellow-500/80">{t.youtubeTransferComingSoon}</p>
-              <p className="text-xs text-muted-foreground">{t.youtubeTransferNote}</p>
-              {youtubeError && (
-                <p className="text-xs text-destructive">{youtubeError}</p>
-              )}
-              <Button
-                variant="outline"
-                className="w-full border-red-500/50 text-red-500 hover:bg-red-500/10"
-                onClick={handleYoutubeTransfer}
-                disabled={youtubeLoading}
-              >
-                <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                </svg>
-                {youtubeLoading ? "転送中..." : t.youtubeTransfer}
-              </Button>
-            </div>
-          )}
-        </div>
-      ) : (
-        /* YouTube転送完了 */
-        <div className="rounded-lg border border-green-500/30 bg-green-500/5 p-3 space-y-2">
-          <p className="text-sm font-medium text-green-500 flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-            {t.youtubeTransferComplete}
-          </p>
-          <p className="text-xs text-muted-foreground font-mono">
-            https://www.youtube.com/watch?v={youtubeVideoId}
-          </p>
-          <p className="text-xs text-muted-foreground">{t.youtubeTransferPrivateNote}</p>
-          <div className="flex gap-2">
-            <a
-              href={`https://studio.youtube.com/video/${youtubeVideoId}/edit`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1"
-            >
-              <Button variant="outline" size="sm" className="w-full text-xs">
-                {t.youtubeStudioButton}
-              </Button>
-            </a>
-            <a
-              href={`https://www.youtube.com/watch?v=${youtubeVideoId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1"
-            >
-              <Button variant="outline" size="sm" className="w-full text-xs">
-                {t.youtubeWatchButton}
-              </Button>
-            </a>
           </div>
+        )}
+      </div>
+
+      {/* 次の動画を作るセクション */}
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t.nextVideoSection}</p>
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => {
+              if (downloaded || window.confirm(t.regenerateConfirm)) {
+                onRegenerate();
+              }
+            }}
+          >
+            {t.regenerateButton}
+          </Button>
+          <Button variant="secondary" className="flex-1" onClick={onReset}>
+            {t.newGeneration}
+          </Button>
         </div>
-      )}
+        <p className="text-xs text-muted-foreground text-center">{t.regenerateNote}</p>
+      </div>
     </Card>
   );
 }
