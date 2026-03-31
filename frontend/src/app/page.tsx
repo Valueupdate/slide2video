@@ -331,6 +331,15 @@ export default function Home() {
     setErrorMessage("");
   }, []);
 
+  const handleRegenerate = useCallback(() => {
+    setProgress(0);
+    setLogs([]);
+    setJobId("");
+    setErrorMessage("");
+    setYoutubeVideoId(null);
+    setState("ready");
+  }, []);
+
   const canGenerate = (() => {
     if (state !== "ready" || !file || !apiKey) return false;
     if (ttsProvider === "qwen-clone" && (!dashscopeKey || !voiceSample)) return false;
@@ -429,6 +438,7 @@ export default function Home() {
             apiUrl={API_URL}
             jobId={jobId}
             onReset={handleReset}
+            onRegenerate={handleRegenerate}
             t={t}
             initialYoutubeVideoId={youtubeVideoId}
           />

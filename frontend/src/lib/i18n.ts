@@ -103,6 +103,10 @@ export const translations = {
     youtubeTransferPrivateNote: "現在は非公開で保管されています。公開する場合は YouTube Studio で公開設定を変更してください。",
     youtubeStudioButton: "YouTube Studio で編集する ↗",
     youtubeWatchButton: "YouTube で確認する ↗",
+    regenerateButton: "🔄 設定を変えて再生成する",
+    regenerateNote: "同じPDFで言語・声・設定を変えて再生成できます",
+    regenerateConfirm: "現在の動画はまだダウンロードされていません。ダウンロードせずに再生成しますか？",
+    downloadedButton: "ダウンロード済み ✅",
   },
   en: {
     // Header
@@ -206,6 +210,10 @@ export const translations = {
     youtubeTransferPrivateNote: "Your video is currently saved as private. Go to YouTube Studio to change the visibility settings.",
     youtubeStudioButton: "Edit in YouTube Studio ↗",
     youtubeWatchButton: "View on YouTube ↗",
+    regenerateButton: "🔄 Regenerate with different settings",
+    regenerateNote: "Regenerate with the same PDF using different language, voice, or settings",
+    regenerateConfirm: "The current video has not been downloaded yet. Regenerate without downloading?",
+    downloadedButton: "Downloaded ✅",
   },
 } as const;
 

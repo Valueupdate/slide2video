@@ -9,16 +9,18 @@ interface DownloadViewProps {
   apiUrl: string;
   jobId: string;
   onReset: () => void;
+  onRegenerate: () => void;
   t: Translations;
   initialYoutubeVideoId?: string | null;
 }
 
-export function DownloadView({ apiUrl, jobId, onReset, t, initialYoutubeVideoId = null }: DownloadViewProps) {
+export function DownloadView({ apiUrl, jobId, onReset, onRegenerate, t, initialYoutubeVideoId = null }: DownloadViewProps) {
   const downloadUrl = `${apiUrl}/download/${jobId}`;
   const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(initialYoutubeVideoId);
   const [youtubeLoading, setYoutubeLoading] = useState(false);
   const [youtubeError, setYoutubeError] = useState("");
   const [showYoutubeHint, setShowYoutubeHint] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
 
   const handleYoutubeTransfer = async () => {
     setYoutubeLoading(true);
@@ -59,18 +61,58 @@ export function DownloadView({ apiUrl, jobId, onReset, t, initialYoutubeVideoId 
         <p className="text-sm text-muted-foreground">{t.downloadNote}</p>
       </div>
 
+      {/* インラインプレビュープレイヤー */}
+      <video
+        src={downloadUrl}
+        controls
+        className="w-full rounded-lg bg-black"
+        style={{ maxHeight: "240px" }}
+      />
+
       {/* ダウンロード・新規作成ボタン */}
       <div className="flex gap-3">
-        <a href={downloadUrl} download className="flex-1">
-          <Button className="w-full" size="lg">
-            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            {t.downloadButton}
+        <a
+          href={downloadUrl}
+          download
+          className="flex-1"
+          onClick={() => setDownloaded(true)}
+        >
+          <Button className={`w-full ${downloaded ? "bg-green-600 hover:bg-green-700" : ""}`} size="lg">
+            {downloaded ? (
+              <>
+                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                {t.downloadedButton}
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                {t.downloadButton}
+              </>
+            )}
           </Button>
         </a>
         <Button variant="secondary" size="lg" onClick={onReset}>
           {t.newGeneration}
+        </Button>
+      </div>
+
+      {/* 再生成ボタン */}
+      <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-1">
+        <p className="text-xs text-muted-foreground text-center">{t.regenerateNote}</p>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => {
+            if (downloaded || window.confirm(t.regenerateConfirm)) {
+              onRegenerate();
+            }
+          }}
+        >
+          {t.regenerateButton}
         </Button>
       </div>
 
