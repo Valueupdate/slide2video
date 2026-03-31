@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { Translations } from "@/lib/i18n";
@@ -22,6 +22,41 @@ export function DownloadView({ apiUrl, jobId, onReset, onRegenerate, t, initialY
   const [showYoutubeHint, setShowYoutubeHint] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
   const [showYoutubeModal, setShowYoutubeModal] = useState(!!initialYoutubeVideoId);
+  const [isPollingYoutube, setIsPollingYoutube] = useState(false);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // YouTube アップロード完了をポーリングで監視（別タブで認証した場合）
+  useEffect(() => {
+    if (!isPollingYoutube) return;
+
+    const poll = async () => {
+      try {
+        const res = await fetch(`${apiUrl}/youtube/status/${jobId}`, {
+          headers: { "ngrok-skip-browser-warning": "true" },
+        });
+        const data = await res.json();
+        if (data.status === "done" && data.video_id) {
+          setYoutubeVideoId(data.video_id);
+          setShowYoutubeModal(true);
+          setIsPollingYoutube(false);
+          setYoutubeLoading(false);
+        } else if (data.status === "error") {
+          setYoutubeError(data.error || "アップロードに失敗しました");
+          setIsPollingYoutube(false);
+          setYoutubeLoading(false);
+        }
+      } catch {
+        // ネットワークエラーは無視して継続
+      }
+    };
+
+    pollingRef.current = setInterval(poll, 2000);
+    poll(); // 初回即時実行
+
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [isPollingYoutube, apiUrl, jobId]);
 
   const handleYoutubeTransfer = async () => {
     setYoutubeLoading(true);
@@ -35,24 +70,26 @@ export function DownloadView({ apiUrl, jobId, onReset, onRegenerate, t, initialY
       if (!res.ok) {
         throw new Error(data.detail || "転送に失敗しました");
       }
-      // auth_url が返ってきた場合は OAuth 認証へリダイレクト
+      // auth_url が返ってきた場合は OAuth 認証を別タブで開き、
+      // 元のタブはポーリングで完了を待つ（リダイレクトしない）
       if (data.auth_url) {
-        window.location.href = data.auth_url;
+        window.open(data.auth_url, "_blank", "noopener,noreferrer");
+        setIsPollingYoutube(true);
         return;
       }
       if (data.video_id) {
         setYoutubeVideoId(data.video_id);
+        setShowYoutubeModal(true);
       }
     } catch (e) {
       setYoutubeError(e instanceof Error ? e.message : "エラーが発生しました");
-    } finally {
       setYoutubeLoading(false);
     }
   };
 
   return (
     <>
-      {/* YouTube完了モーダル（案B） */}
+      {/* YouTube完了モーダル */}
       {showYoutubeModal && youtubeVideoId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
           <div className="bg-card border border-border rounded-xl shadow-xl w-full max-w-sm mx-4 p-6 space-y-4">
@@ -89,6 +126,37 @@ export function DownloadView({ apiUrl, jobId, onReset, onRegenerate, t, initialY
                 {t.youtubeModalClose}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* YouTube ポーリング中の表示 */}
+      {isPollingYoutube && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="bg-card border border-border rounded-xl shadow-xl w-full max-w-sm mx-4 p-6 space-y-4">
+            <div className="text-center space-y-3">
+              <div className="w-14 h-14 mx-auto">
+                <svg className="w-14 h-14 text-red-500 animate-pulse" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+              </div>
+              <h2 className="text-lg font-semibold">YouTube にアップロード中...</h2>
+              <p className="text-sm text-muted-foreground">
+                別タブで Google アカウントの認証を完了してください。
+              </p>
+              <p className="text-xs text-muted-foreground">
+                認証が完了すると自動的にアップロードが開始されます。
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setIsPollingYoutube(false);
+                setYoutubeLoading(false);
+              }}
+              className="w-full py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              キャンセル
+            </button>
           </div>
         </div>
       )}
@@ -214,11 +282,7 @@ export function DownloadView({ apiUrl, jobId, onReset, onRegenerate, t, initialY
           <Button
             variant="outline"
             className="flex-1"
-            onClick={() => {
-              if (downloaded || window.confirm(t.regenerateConfirm)) {
-                onRegenerate();
-              }
-            }}
+            onClick={onRegenerate}
           >
             {t.regenerateButton}
           </Button>

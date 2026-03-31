@@ -76,7 +76,6 @@ export default function Home() {
   const [jobId, setJobId] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [uiLang, setUiLang] = useState<Lang>("ja");
-  const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
@@ -89,19 +88,7 @@ export default function Home() {
     setUiLang(isEnglish ? "en" : "ja");
   }, []);
 
-  // YouTube OAuth コールバック後のURL パラメータを処理
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const ytVideoId = params.get("youtube_video_id");
-    const ytJobId = params.get("job_id");
-    if (ytVideoId && ytJobId) {
-      setYoutubeVideoId(ytVideoId);
-      setJobId(ytJobId);
-      setState("done");
-      // URLパラメータをクリア
-      window.history.replaceState({}, "", "/");
-    }
-  }, []);
+
 
   // ブラウザの言語設定からデフォルト出力言語を推定
   useEffect(() => {
@@ -336,7 +323,6 @@ export default function Home() {
     setLogs([]);
     setJobId("");
     setErrorMessage("");
-    setYoutubeVideoId(null);
     setState("ready");
   }, []);
 
@@ -440,7 +426,6 @@ export default function Home() {
             onReset={handleReset}
             onRegenerate={handleRegenerate}
             t={t}
-            initialYoutubeVideoId={youtubeVideoId}
           />
         )}
 

@@ -219,6 +219,10 @@ async def generate_scripts(
             page_range = f"{group[0]['page_number']}-{group[-1]['page_number']}"
             if output_language in ("ja", "auto"):
                 await progress_callback(pct, f"スライド {page_range}/{total} の台本生成中（バッチ {group_idx + 1}/{total_groups}）...")
+            elif output_language == "zh-CN":
+                await progress_callback(pct, f"正在生成幻灯片 {page_range}/{total} 的脚本（批次 {group_idx + 1}/{total_groups}）...")
+            elif output_language == "ko":
+                await progress_callback(pct, f"슬라이드 {page_range}/{total} 스크립트 생성 중（배치 {group_idx + 1}/{total_groups}）...")
             else:
                 await progress_callback(pct, f"Generating script for slides {page_range}/{total} (batch {group_idx + 1}/{total_groups})...")
 
@@ -248,6 +252,10 @@ async def generate_scripts(
                 pct = 10 + int((processed_pages / total) * 40)
                 if output_language in ("ja", "auto"):
                     await progress_callback(pct, f"スライド {page['page_number']}/{total} の台本生成中（個別）...")
+                elif output_language == "zh-CN":
+                    await progress_callback(pct, f"正在生成幻灯片 {page['page_number']}/{total} 的脚本（单独）...")
+                elif output_language == "ko":
+                    await progress_callback(pct, f"슬라이드 {page['page_number']}/{total} 스크립트 생성 중（개별）...")
                 else:
                     await progress_callback(pct, f"Generating script for slide {page['page_number']}/{total} (individual)...")
 
@@ -355,6 +363,10 @@ async def _generate_scripts_single(
             pct = 10 + int((i / total) * 40)
             if output_language in ("ja", "auto"):
                 await progress_callback(pct, f"スライド {page_num}/{total} の台本生成中...")
+            elif output_language == "zh-CN":
+                await progress_callback(pct, f"正在生成幻灯片 {page_num}/{total} 的脚本...")
+            elif output_language == "ko":
+                await progress_callback(pct, f"슬라이드 {page_num}/{total} 스크립트 생성 중...")
             else:
                 await progress_callback(pct, f"Generating script for slide {page_num}/{total}...")
 
