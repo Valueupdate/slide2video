@@ -7,7 +7,7 @@
 | T-01 | DNS 設定（サブドメイン） | ドメインレジストラでサブドメインのAレコードをVPS IPに向ける | ✅ 完了 |
 | T-02 | SSL 証明書（Let's Encrypt） | `certbot --nginx` で HTTPS 化 | ✅ 完了 |
 | T-03 | `.env` 本番設定 | `FRONTEND_URL` を本番URLに変更 | ✅ 完了 |
-| T-04 | page.tsx の ElevenLabs useEffect 修正 | `/voices` エンドポイント取得の useEffect が欠落 → 追加 | 🔲 未着手 |
+| T-04 | page.tsx の ElevenLabs useEffect 修正 | `/voices` エンドポイント取得の useEffect が欠落 → 追加 | ✅ 完了 |
 
 ## 3.2 運用基盤（1週間以内）
 
@@ -71,3 +71,4 @@
 | ✅ | フッターにプライバシーポリシーリンク追加 | 2026-03-30 |
 | ✅ | Google Search Console 所有権確認 | 2026-03-30 |
 | ✅ | Google OAuth 審査申請送信 | 2026-03-30 |
+| ✅ | T-04 ElevenLabs useEffect 確認（SettingsForm.tsx に実装済み）| 2026-03-31 |
