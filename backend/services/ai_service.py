@@ -18,45 +18,49 @@ from config import GEMINI_MODEL, OPENAI_MODEL, OPENROUTER_MODEL, OPENROUTER_BASE
 DEFAULT_BATCH_SIZE = 10  # デフォルトのバッチサイズ（1リクエストあたりのスライド数）
 MAX_BATCH_SIZE = 15      # 最大バッチサイズ
 
-SCRIPT_PROMPT_TEMPLATE = """あなたはプロのプレゼンターです。
-以下のスライド内容に基づいて、自然で説得力のあるプレゼンテーションの台本を作成してください。
+SCRIPT_PROMPT_TEMPLATE = """You are a professional presenter.
+Based on the slide content below, write a natural and engaging presentation narration script.
 
-スライド内容:
+Slide content:
 {slide_text}
-（※画像が提供されている場合、テキストが読めなければ画像を優先して内容を把握してください）
+(If an image is provided and text is unclear, prioritize the image content.)
 
-制約事項:
+Requirements:
 {duration_instruction}
 {language_instruction}
-- 聴衆に語りかけるような自然な表現にしてください。
-- 専門用語があれば簡潔に解説を加えてください。
-- 出力は台本テキストのみを返してください。JSON不要です。余分な前置き・後書き不要です。"""
+- Write in a conversational tone as if speaking directly to the audience.
+- Do NOT repeat the same sentence or phrase.
+- Each sentence must be complete and grammatically correct.
+- If technical terms appear, briefly explain them in plain language.
+- Output the script text ONLY. No JSON, no preamble, no postamble."""
 
-BATCH_PROMPT_TEMPLATE = """あなたはプロのプレゼンターです。
-以下の複数スライドの内容に基づいて、各スライドごとに自然で説得力のあるプレゼンテーションの台本を作成してください。
+BATCH_PROMPT_TEMPLATE = """You are a professional presenter.
+Based on the multiple slide contents below, write a natural and engaging narration script for EACH slide.
 
 {slides_section}
 
-制約事項:
+Requirements:
 {duration_instruction}
 {language_instruction}
-- 聴衆に語りかけるような自然な表現にしてください。
-- 専門用語があれば簡潔に解説を加えてください。
-- 各スライドの台本を以下の形式で区切って出力してください:
+- Write in a conversational tone as if speaking directly to the audience.
+- Do NOT repeat the same sentence or phrase within or across slides.
+- Each sentence must be complete and grammatically correct.
+- If technical terms appear, briefly explain them in plain language.
+- You MUST separate each slide's script using EXACTLY this format:
 
 ---SLIDE_1---
-（スライド1の台本テキスト）
+(script for slide 1)
 ---SLIDE_2---
-（スライド2の台本テキスト）
+(script for slide 2)
 
-このように ---SLIDE_N--- の区切りを必ず入れてください。台本テキスト以外の余分な説明は不要です。"""
+IMPORTANT: Always include the ---SLIDE_N--- separator. Output script text only. No extra explanation."""
 
 
 # 出力言語の設定
 OUTPUT_LANGUAGES = {
     "auto": {"label": "原文のまま（自動判定）", "instruction": "- スライドの原文と同じ言語で台本を作成してください。"},
     "ja": {"label": "日本語", "instruction": "- 台本は必ず日本語で作成してください。スライドが他の言語の場合は日本語に翻訳してください。"},
-    "en": {"label": "English", "instruction": "- The script MUST be written in English. If the slides are in another language, translate to English."},
+    "en": {"label": "English", "instruction": "- The script MUST be written in fluent, natural English suitable for a professional presentation. If the slides are in another language, translate the content into English. Avoid repetition and ensure every sentence is complete."},
     "zh-CN": {"label": "中文（简体）", "instruction": "- 台本必须用简体中文撰写。如果幻灯片是其他语言，请翻译成中文。"},
     "ko": {"label": "한국어", "instruction": "- 대본은 반드시 한국어로 작성하세요. 슬라이드가 다른 언어인 경우 한국어로 번역하세요。"},
     "fr": {"label": "Français", "instruction": "- Le script DOIT être rédigé en français. Si les diapositives sont dans une autre langue, traduisez en français."},
@@ -121,25 +125,37 @@ def _parse_batch_response(response_text: str, expected_count: int) -> List[str]:
     Returns:
         各スライドの台本テキストのリスト
     """
-    # ---SLIDE_N--- パターンで分割
-    pattern = r"---SLIDE_\d+---"
-    parts = re.split(pattern, response_text)
+    # ---SLIDE_N--- パターンで分割（大文字小文字・スペース揺れに対応）
+    pattern = r"-{2,}SLIDE_\d+-{2,}"
+    parts = re.split(pattern, response_text, flags=re.IGNORECASE)
 
     # 最初の空要素（区切りの前のテキスト）を除去
     scripts = [part.strip() for part in parts if part.strip()]
 
-    # 期待数と一致しない場合
-    if len(scripts) != expected_count:
-        # 区切りなしの場合、改行ベースで分割を試みる
-        if len(scripts) <= 1 and expected_count > 1:
-            # ダブル改行で分割
-            alt_scripts = [s.strip() for s in response_text.split("\n\n\n") if s.strip()]
-            if len(alt_scripts) == expected_count:
-                return alt_scripts
+    # 期待数と一致した場合はそのまま返す
+    if len(scripts) == expected_count:
+        return scripts
 
-        # それでも一致しない場合はそのまま返す（呼び出し元でフォールバック）
-        print(f"[AIService] Batch parse: expected {expected_count}, got {len(scripts)}")
+    print(f"[AIService] Batch parse: expected {expected_count}, got {len(scripts)}")
 
+    # フォールバック1: ダブル改行で分割
+    alt_scripts = [s.strip() for s in response_text.split("\n\n\n") if s.strip()]
+    if len(alt_scripts) == expected_count:
+        print(f"[AIService] Batch parse: fallback to triple-newline split")
+        return alt_scripts
+
+    # フォールバック2: ダブル改行（2つ）で分割
+    alt_scripts2 = [s.strip() for s in response_text.split("\n\n") if s.strip()]
+    if len(alt_scripts2) == expected_count:
+        print(f"[AIService] Batch parse: fallback to double-newline split")
+        return alt_scripts2
+
+    # フォールバック3: 期待数より多い場合は先頭からN個取る
+    if len(scripts) > expected_count:
+        print(f"[AIService] Batch parse: trimming to expected count")
+        return scripts[:expected_count]
+
+    # それでも一致しない場合はそのまま返す（呼び出し元でフォールバック）
     return scripts
 
 

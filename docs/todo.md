@@ -15,9 +15,9 @@
 |---|--------|------|------|
 | T-05 | Google Analytics 導入 | `NEXT_PUBLIC_GA_ID` 環境変数方式で GA4 スクリプトを追加 | ✅ 完了 |
 | T-06 | VPS デプロイ手順の文書化 | `git pull` → `npm run build` → `systemctl restart slide2video` の手順を記載 | 🔲 未着手 |
-| T-07 | 自動デプロイスクリプト作成 | `deploy.sh`（pull, install, build, restart を一括実行）を作成 | 🔲 未着手 |
-| T-08 | ログローテーション設定 | `/etc/systemd/journald.conf` で `SystemMaxUse=500M` 等 | 🔲 未着手 |
-| T-09 | 一時ファイル自動削除 | cron で24時間経過分を削除 | 🔲 未着手 |
+| T-07 | 自動デプロイスクリプト作成 | `deploy.sh`（pull, install, build, restart を一括実行）を作成 | ✅ 完了 |
+| T-08 | ログローテーション設定 | `/etc/systemd/journald.conf` で `SystemMaxUse=500M` 等 | ✅ 完了 |
+| T-09 | 一時ファイル自動削除 | cron で24時間経過分を削除 | ✅ 完了 |
 | T-20 | フッターに GitHub リンク追加 | フッターに GitHub リポジトリへのリンクを表示 | ✅ 完了 |
 | T-21 | フッターに MIT License 表記 | フッターに「MIT License」と記載し LICENSE ファイルにリンク | ✅ 完了 |
 | T-22 | README.md に Live Demo URL 追加 | README 冒頭に公開サイトURL記載 + GitHub About に Website URL 設定 | ✅ 完了 |
@@ -72,3 +72,6 @@
 | ✅ | Google Search Console 所有権確認 | 2026-03-30 |
 | ✅ | Google OAuth 審査申請送信 | 2026-03-30 |
 | ✅ | T-04 ElevenLabs useEffect 確認（SettingsForm.tsx に実装済み）| 2026-03-31 |
+| ✅ | T-07 deploy.sh 作成・VPS_HOST 環境変数対応 | 2026-03-31 |
+| ✅ | T-08 ログローテーション設定（SystemMaxUse=500M） | 2026-03-31 |
+| ✅ | T-09 一時ファイル自動削除 cron 設定 | 2026-03-31 |
