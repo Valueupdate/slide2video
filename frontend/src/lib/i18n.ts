@@ -112,6 +112,7 @@ export const translations = {
     shareDestination: "共有先を選択",
     sharingInProgress: "共有中...",
     nextVideoSection: "次の動画を作る",
+    youtubeModalClose: "閉じて動画画面に戻る",
   },
   en: {
     // Header
@@ -224,6 +225,7 @@ export const translations = {
     shareDestination: "Select destination",
     sharingInProgress: "Sharing...",
     nextVideoSection: "Create next video",
+    youtubeModalClose: "Close and return to video",
   },
 } as const;
 

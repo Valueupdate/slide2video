@@ -471,6 +471,11 @@ async def download(job_id: str):
 
 
 # ─── YouTube OAuth ────────────────────────────────────
+
+# アップロード状態をメモリ管理
+_youtube_upload_status: dict = {}
+
+
 @app.get("/youtube/auth/{job_id}")
 async def youtube_auth(job_id: str):
     state = f"{job_id}:{secrets.token_urlsafe(16)}"
@@ -478,17 +483,38 @@ async def youtube_auth(job_id: str):
 
 
 @app.get("/youtube/callback")
-async def youtube_callback(code: str, state: str):
+async def youtube_callback(code: str, state: str, background_tasks: BackgroundTasks):
     job_id = state.split(":")[0]
-    access_token = await exchange_code(code)
 
-    video_path = os.path.join(TEMP_DIR, job_id, f"{job_id}.mp4")
-    title = f"Slide2Video – {job_id}"
-    video_id = await upload_video(access_token, video_path, title)
+    # アップロード状態を「処理中」に設定
+    _youtube_upload_status[job_id] = {"status": "uploading", "video_id": None, "error": None}
 
+    # アップロードをバックグラウンドで実行
+    async def do_upload():
+        try:
+            access_token = await exchange_code(code)
+            video_path = os.path.join(TEMP_DIR, job_id, f"{job_id}.mp4")
+            title = f"Slide2Video – {job_id}"
+            video_id = await upload_video(access_token, video_path, title)
+            _youtube_upload_status[job_id] = {"status": "done", "video_id": video_id, "error": None}
+        except Exception as e:
+            _youtube_upload_status[job_id] = {"status": "error", "video_id": None, "error": str(e)}
+
+    background_tasks.add_task(do_upload)
+
+    # すぐに uploading ページにリダイレクト
     return RedirectResponse(
-        f"{FRONTEND_URL}?youtube_video_id={video_id}&job_id={job_id}"
+        f"{FRONTEND_URL}/youtube/uploading?job_id={job_id}"
     )
+
+
+@app.get("/youtube/status/{job_id}")
+async def youtube_status(job_id: str):
+    """YouTube アップロード状態をポーリングで確認する"""
+    status = _youtube_upload_status.get(job_id)
+    if not status:
+        return {"status": "not_found"}
+    return status
 
 
 @app.post("/youtube/upload/{job_id}")
