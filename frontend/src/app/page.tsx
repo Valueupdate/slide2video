@@ -16,6 +16,54 @@ export interface LogEntry {
   timestamp: Date;
 }
 
+function DemoVideoCard({ uiLang }: { uiLang: string }) {
+  const [open, setOpen] = useState(false);
+  const videoId = uiLang === "ja" ? "RWbunkq8ttA" : "x-gOYT_M9Rg";
+  const label = uiLang === "ja" ? "デモ動画を見る" : "Watch Demo Video";
+  const note = uiLang === "ja"
+    ? "✨ この動画は Slide2Video で自動生成されました"
+    : "✨ This video was automatically generated with Slide2Video";
+
+  return (
+    <div
+      className="rounded-lg border border-border bg-card px-3 py-2 cursor-pointer hover:border-primary/50 transition-colors"
+      onClick={() => setOpen(!open)}
+    >
+      <div className="flex items-center gap-3">
+        <div className="text-2xl shrink-0">🎬</div>
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold text-sm">{label}</div>
+          <div className="text-xs text-muted-foreground">{note}</div>
+        </div>
+        <svg
+          className={`w-3 h-3 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+      {open && (
+        <div
+          className="mt-2 pt-2 border-t border-border"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="rounded-lg overflow-hidden aspect-video">
+            <iframe
+              width="100%"
+              height="100%"
+              src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=1`}
+              title="Slide2Video Demo"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function UseCaseCards({ t }: { t: import("@/lib/i18n").Translations }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const cases = [
@@ -353,31 +401,7 @@ export default function Home() {
         <UseCaseCards t={t} />
 
         {/* デモ動画セクション */}
-        <div className="space-y-3">
-          <div className="text-center space-y-1">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              {uiLang === "ja" ? "デモ動画" : "Demo Video"}
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              {uiLang === "ja"
-                ? "✨ この動画は Slide2Video で自動生成されました"
-                : "✨ This video was automatically generated with Slide2Video"}
-            </p>
-          </div>
-          <div className="rounded-xl overflow-hidden border border-border aspect-video">
-            <iframe
-              width="100%"
-              height="100%"
-              src={uiLang === "ja"
-                ? "https://www.youtube.com/embed/RWbunkq8ttA?rel=0&modestbranding=1"
-                : "https://www.youtube.com/embed/x-gOYT_M9Rg?rel=0&modestbranding=1"}
-              title="Slide2Video Demo"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
-        </div>
+        <DemoVideoCard uiLang={uiLang} />
         <UploadArea
           file={file}
           onFileSelect={handleFileSelect}
