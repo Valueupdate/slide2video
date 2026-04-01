@@ -352,6 +352,32 @@ export default function Home() {
 
         <UseCaseCards t={t} />
 
+        {/* デモ動画セクション */}
+        <div className="space-y-3">
+          <div className="text-center space-y-1">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              {uiLang === "ja" ? "デモ動画" : "Demo Video"}
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              {uiLang === "ja"
+                ? "✨ この動画は Slide2Video で自動生成されました"
+                : "✨ This video was automatically generated with Slide2Video"}
+            </p>
+          </div>
+          <div className="rounded-xl overflow-hidden border border-border aspect-video">
+            <iframe
+              width="100%"
+              height="100%"
+              src={uiLang === "ja"
+                ? "https://www.youtube.com/embed/RWbunkq8ttA"
+                : "https://www.youtube.com/embed/x-gOYT_M9Rg"}
+              title="Slide2Video Demo"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
         <UploadArea
           file={file}
           onFileSelect={handleFileSelect}
