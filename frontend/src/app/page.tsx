@@ -369,8 +369,8 @@ export default function Home() {
               width="100%"
               height="100%"
               src={uiLang === "ja"
-                ? "https://www.youtube.com/embed/RWbunkq8ttA"
-                : "https://www.youtube.com/embed/x-gOYT_M9Rg"}
+                ? "https://www.youtube.com/embed/RWbunkq8ttA?rel=0&modestbranding=1"
+                : "https://www.youtube.com/embed/x-gOYT_M9Rg?rel=0&modestbranding=1"}
               title="Slide2Video Demo"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
