@@ -108,7 +108,7 @@ export default function TermsPage() {
         <div>
           <Link href="/" className="text-blue-600 hover:underline">← トップに戻る / Back to Top</Link>
           <span className="mx-2">|</span>
-          <Link href="/privacy" className="text-blue-600 hover:underline">プライバシーポリシー / Privacy Policy</Link>
+          <Link href="/privacy/" className="text-blue-600 hover:underline">プライバシーポリシー / Privacy Policy</Link>
         </div>
       </footer>
     </div>
