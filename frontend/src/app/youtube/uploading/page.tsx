@@ -9,6 +9,7 @@ function UploadingContent() {
   const jobId = searchParams.get("job_id") || "";
   const [status, setStatus] = useState<"uploading" | "done" | "error">("uploading");
   const [errorMessage, setErrorMessage] = useState("");
+  const [videoId, setVideoId] = useState("");
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -23,9 +24,8 @@ function UploadingContent() {
         const data = await res.json();
 
         if (data.status === "done" && data.video_id) {
+          setVideoId(data.video_id);
           setStatus("done");
-          // 完了後にフロントにリダイレクト
-          window.location.href = `/?youtube_video_id=${data.video_id}&job_id=${jobId}`;
         } else if (data.status === "error") {
           setStatus("error");
           setErrorMessage(data.error || "アップロードに失敗しました");
