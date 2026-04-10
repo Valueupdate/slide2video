@@ -26,6 +26,10 @@ function UploadingContent() {
         if (data.status === "done" && data.video_id) {
           setVideoId(data.video_id);
           setStatus("done");
+          // 別タブを閉じる（opener がある場合はタブを閉じる）
+          setTimeout(() => {
+            window.close();
+          }, 1500);
         } else if (data.status === "error") {
           setStatus("error");
           setErrorMessage(data.error || "アップロードに失敗しました");
@@ -89,9 +93,15 @@ function UploadingContent() {
                 アップロード完了！
               </h1>
               <p className="text-sm text-muted-foreground">
-                元の画面に戻っています...
+                このタブは自動的に閉じられます...
               </p>
             </div>
+            <button
+              onClick={() => window.close()}
+              className="mt-2 px-4 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              このタブを閉じる
+            </button>
           </>
         )}
 
