@@ -231,7 +231,7 @@ export function DownloadView({ apiUrl, jobId, onReset, onRegenerate, t, initialY
             {!youtubeVideoId ? (
               <>
                 <p className="text-xs font-medium text-muted-foreground">{t.shareDestination}</p>
-                <p className="text-xs text-yellow-500/80">{t.youtubeTransferComingSoon}</p>
+
                 <p className="text-xs text-muted-foreground">{t.youtubeTransferNote}</p>
                 {youtubeError && (
                   <p className="text-xs text-destructive">{youtubeError}</p>
