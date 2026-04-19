@@ -159,40 +159,53 @@ export default function PrivacyPage() {
 
         <h3>5-1. AI APIキー / AI API Keys</h3>
         <p>
-          ユーザーが入力したAI APIキーは、動画生成リクエストの処理時にのみ使用され、
-          サーバーに恒久的に保存されません。
+          ユーザーが入力したAI APIキーは、動画生成リクエストの処理時にサーバーのメモリ上でのみ一時的に保持され、
+          処理完了後は直ちにメモリから解放されます。
+          データベース、ログファイル、またはその他の永続的なストレージに保存されることは一切ありません。
           また、当該キーは、ユーザーが選択したAIプロバイダーに対して動画生成に必要な範囲でのみ送信され、
           他の目的には使用されません。
         </p>
         <p>
-          AI API keys entered by users are used only during the video generation request and are not permanently stored on our servers.
+          AI API keys entered by users are temporarily held in server memory only during the video generation request and are immediately released from memory upon completion.
+          They are never written to any database, log file, or other persistent storage.
           These keys are transmitted only to the AI provider selected by the user and only to the extent necessary to generate scripts, audio, or video content.
           They are not used for any other purpose.
         </p>
 
         <h3>5-2. Google OAuth認可情報 / Google OAuth Authorization Data</h3>
         <p>
-          Google OAuth により取得したアクセストークンは、YouTubeアップロード処理時にのみ一時的に使用され、
-          アップロード完了後に直ちに破棄されます。
-          本サービスは、リフレッシュトークンを恒久保存しません。
-          また、Googleアカウント情報およびYouTubeアカウント情報を恒久的に保存しません。
+          Google OAuth により取得したアクセストークンは、以下の通り厳格に取り扱われます。
         </p>
+        <ul>
+          <li>アクセストークンはサーバーのメモリ上でのみ一時的に保持され、データベースやファイルに書き込まれません。</li>
+          <li>YouTubeへのアップロード処理が完了した時点で、アクセストークンへの参照は即座に破棄されます。</li>
+          <li>本サービスはリフレッシュトークンを取得・保存しません（OAuth認可時に <code>access_type=online</code> を指定しているため）。</li>
+          <li>Googleアカウントのメールアドレス、プロフィール情報、YouTubeチャンネル情報は収集・保存しません。</li>
+        </ul>
         <p>
-          Access tokens obtained through Google OAuth are used temporarily only during the YouTube upload process and are discarded immediately after the upload is completed.
-          The Service does not permanently store refresh tokens.
-          The Service also does not permanently store Google account information or YouTube account information.
+          Google OAuth access tokens are handled as follows:
         </p>
+        <ul>
+          <li>Access tokens are held only in server memory and are never written to any database or file.</li>
+          <li>Upon completion of the YouTube upload process, all references to the access token are immediately discarded.</li>
+          <li>The Service does not obtain or store refresh tokens (the OAuth authorization specifies <code>access_type=online</code>).</li>
+          <li>Google account email addresses, profile information, and YouTube channel information are not collected or stored.</li>
+        </ul>
 
-        <h3>5-3. セキュリティ / Security</h3>
+        <h3>5-3. サーバーの所在・セキュリティ / Server Location and Security</h3>
         <p>
-          本サービスは、通信中のデータを保護するため HTTPS を使用します。
-          アップロードされたPDFファイルおよび生成ファイルは一時的にサーバー上で処理されますが、不要になった時点で削除されます。
-          不正アクセス、漏えい、改ざん、または不適切な利用を防止するため、合理的な安全管理措置を講じます。
+          本サービスのバックエンドサーバーは日本国内のVPS（仮想プライベートサーバー）上で運用されています。
+          通信はすべてTLS（HTTPS）により暗号化されます。
+          アップロードされたPDFファイルおよび生成ファイルはサーバーの一時ディレクトリに保存され、
+          ジョブ完了後30分以内に自動削除されます。
+          不正アクセス、漏えい、改ざん、または不適切な利用を防止するため、ファイアウォール設定および
+          定期的なセキュリティアップデートを含む合理的な安全管理措置を講じます。
         </p>
         <p>
-          The Service uses HTTPS to protect data in transit.
-          Uploaded PDF files and generated files are processed temporarily on the server and are deleted when no longer needed.
-          We take reasonable security measures to help prevent unauthorized access, disclosure, alteration, or misuse.
+          The Service's backend server operates on a VPS (Virtual Private Server) located in Japan.
+          All communications are encrypted using TLS (HTTPS).
+          Uploaded PDF files and generated files are stored in a temporary server directory and automatically deleted within 30 minutes of job completion.
+          We implement reasonable security measures including firewall configuration and regular security updates to help prevent unauthorized access, disclosure, alteration, or misuse.
         </p>
 
         <h2>6. 第三者共有 / Data Sharing</h2>
@@ -250,14 +263,22 @@ export default function PrivacyPage() {
         <h3>7-3. 削除依頼 / Deletion Requests</h3>
         <p>
           ユーザーが本サービスに関連するデータの削除やプライバシーに関する問い合わせを希望する場合は、
-          下記のお問い合わせ先までご連絡ください。
-          なお、保存していないデータについては削除対象が存在しない場合があります。
+          以下の手順でご連絡ください。
         </p>
+        <ol>
+          <li>下記メールアドレスまたはお問い合わせページから、件名に「データ削除依頼」と記載してご連絡ください。</li>
+          <li>本サービスは受信後、<strong>30日以内</strong>に内容を確認のうえ対応いたします。</li>
+          <li>なお、本サービスはユーザーデータを原則として永続保存しないため、削除対象のデータが存在しない場合があります。その場合はその旨をご回答いたします。</li>
+        </ol>
         <p>
           If a user wishes to request deletion of data related to the Service or has a privacy-related inquiry,
-          they may contact us using the contact information below.
-          For data that is not stored, there may be no retained data available for deletion.
+          please follow the steps below:
         </p>
+        <ol>
+          <li>Contact us via the email address or contact page below, with the subject line "Data Deletion Request".</li>
+          <li>We will review your request and respond within <strong>30 days</strong> of receipt.</li>
+          <li>Since the Service does not permanently store user data as a general rule, there may be no retained data to delete. In such cases, we will inform you accordingly.</li>
+        </ol>
 
         <h2>8. Cookieとアクセス解析 / Cookies and Analytics</h2>
         <p>

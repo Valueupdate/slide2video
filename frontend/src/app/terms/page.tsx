@@ -10,105 +10,103 @@ export default function TermsPage() {
       </header>
 
       <main className="flex-1 container mx-auto px-4 py-8 max-w-2xl prose prose-sm dark:prose-invert">
-        <h1>利用規約・ / Terms of Service</h1>
+        <h1>利用規約・注意事項 / Terms of Service</h1>
         <p className="text-muted-foreground text-sm">
-          最終更新日 / Last updated: 2026年3月30日
+          最終更新日 / Last updated: 2026年4月19日
         </p>
 
-        <h2>1. サービス概要 / Service Overview</h2>
+        <h2>1. 著作権・権利関係に関する注意事項</h2>
         <p>
-          Slide2Video（以下「本サービス」）は、PDFファイルからAIナレーション付きプレゼンテーション動画を自動生成する実験的なWebサービスです。本サービスは現状有姿（as-is）で提供され、動作の完全性・正確性・継続性を保証するものではありません。
-        </p>
-        <p>
-          Slide2Video (the "Service") is an experimental web service that automatically generates AI-narrated presentation videos from PDF files. The Service is provided "as-is" without any warranty of completeness, accuracy, or continuity.
+          本サービスにアップロードするPDF、資料、画像、図表、ロゴ、文章、音声その他のコンテンツについては、ユーザーご自身が適法に利用できる権利を有しているか、または必要な許諾を得ていることを前提としています。第三者の著作物、商標、営業資料、配布制限のある資料等を、権利者の許可なくアップロード・変換・配信しないでください。アップロードされたコンテンツに関する著作権、利用許諾、ライセンス、社内利用制限その他の法的責任は、ユーザーご自身に帰属します。
         </p>
 
-        <h2>2. APIキーの取り扱い / API Key Handling</h2>
+        <h2>2. AI生成内容の正確性・品質に関する注意事項</h2>
         <p>
-          本サービスの利用にはユーザー自身のAI APIキー（Google Gemini、OpenAI、OpenRouter等）が必要です。入力されたAPIキーはサーバーに保存されず、動画生成リクエスト時の通信にのみ使用されます。APIキーの管理・漏洩防止はユーザー自身の責任とします。APIキーの利用に伴う料金はすべてユーザーの負担となります。
+          本サービスでは、AIを用いて台本、ナレーション、要約、翻訳、動画構成等を自動生成しますが、その内容の正確性、完全性、適切性、最新性、法的妥当性を保証するものではありません。AIの生成結果には、事実誤認、誤訳、要約ミス、不自然な表現、意図しない解釈、文脈の取り違え等が含まれる可能性があります。対外公開、社内配布、商用利用、教育利用、説明責任を伴う用途に用いる場合は、ユーザーご自身で必ず内容を確認・修正した上でご利用ください。
         </p>
         <p>
-          Use of the Service requires the user's own AI API key (Google Gemini, OpenAI, OpenRouter, etc.). Entered API keys are never stored on the server and are used solely during video generation requests. Users are solely responsible for managing and protecting their API keys. All charges incurred through API key usage are the user's responsibility.
-        </p>
-
-        <h2>3. アップロードコンテンツの著作権 / Copyright of Uploaded Content</h2>
-        <p>
-          ユーザーがアップロードするPDFファイルの著作権・知的財産権に関する責任はユーザーに帰属します。第三者の著作物を許諾なくアップロードし動画を生成する行為は禁止します。本サービスはアップロードされたコンテンツの権利関係を確認する義務を負いません。
-        </p>
-        <p>
-          Users are solely responsible for the copyright and intellectual property rights of uploaded PDF files. Uploading third-party copyrighted material without permission is prohibited. The Service has no obligation to verify the rights status of uploaded content.
-        </p>
-
-        <h2>4. AI生成コンテンツについて / AI-Generated Content</h2>
-        <p>
-          AIが生成する台本・ナレーションの内容は、元のスライドに基づいて自動生成されたものであり、正確性・適切性を保証するものではありません。生成されたコンテンツの利用に関する責任はユーザーに帰属します。商用利用する場合は、利用する各AIプロバイダーの利用規約もご確認ください。
-        </p>
-        <p>
-          AI-generated scripts and narration are automatically created based on the original slides, and their accuracy or appropriateness is not guaranteed. Users are solely responsible for how they use generated content. For commercial use, please also review the terms of service of each AI provider used.
-        </p>
-
-        <h2>5. ボイスクローン機能について / Voice Clone Feature</h2>
-        <p>
-          ボイスクローン機能を使用する場合、アップロードする音声サンプルはユーザー本人の声、または権利者から明示的な許諾を得た声に限定してください。他人の声（声優、有名人等）を無断で複製・使用することは法律で禁止されている場合があります。音声の権利に関するトラブルについて、本サービスは一切の責任を負いません。
-        </p>
-        <p>
-          When using the voice clone feature, uploaded audio samples must be the user's own voice or a voice for which explicit permission has been obtained from the rights holder. Unauthorized cloning or use of another person's voice (e.g., voice actors, celebrities) may be prohibited by law. The Service accepts no liability for any disputes related to voice rights.
-        </p>
-
-        <h2>6. YouTubeへの転送について / YouTube Transfer</h2>
-        <p>
-          本サービスはGoogle OAuthを通じてYouTubeへの動画転送機能を提供します。転送された動画は非公開として保存されます。YouTubeの利用規約および著作権ポリシーに従ってご利用ください。
-        </p>
-        <p>
-          The Service provides YouTube video transfer functionality through Google OAuth. Transferred videos are saved as private. Please comply with YouTube's Terms of Service and copyright policies.
-        </p>
-
-        <h2>7. 各プロバイダーの利用規約 / Third-Party Terms</h2>
-        <p>
-          本サービスは以下の外部サービスを利用しています。ユーザーは各サービスの利用規約に従う責任があります。
-          The Service uses the following external services. Users are responsible for complying with each service's terms.
+          また、生成品質はアップロードされたPDFの内容・構成・文字量・画像品質に大きく依存します。以下のような場合、生成結果の品質が著しく低下する可能性があります。
         </p>
         <ul>
-          <li><a href="https://ai.google.dev/gemini-api/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google Gemini API Terms</a></li>
-          <li><a href="https://openai.com/policies/terms-of-use" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">OpenAI Terms of Use</a></li>
-          <li><a href="https://openrouter.ai/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">OpenRouter Terms</a></li>
-          <li><a href="https://elevenlabs.io/terms-of-service" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">ElevenLabs Terms of Service</a></li>
-          <li><a href="https://azure.microsoft.com/en-us/support/legal/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Microsoft Azure Terms</a></li>
-          <li><a href="https://cloud.google.com/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google Cloud Terms</a></li>
-          <li><a href="https://www.alibabacloud.com/help/en/legal" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Alibaba Cloud (DashScope) Terms</a></li>
-          <li><a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">YouTube Terms of Service</a></li>
+          <li>テキストがほとんど含まれないスライド（図表・画像のみ）</li>
+          <li>スキャンされたPDFや文字化けしているPDF</li>
+          <li>極めて専門性の高い用語・記号・数式を多用したスライド</li>
+          <li>1スライドあたりの文字量が極端に多いまたは少ない場合</li>
+        </ul>
+        <p>
+          生成された動画の品質・内容に関するクレーム・返金・損害賠償には応じられません。事前にサンプルPDFでお試しいただくことを推奨します。
+        </p>
+
+        <h2>3. APIキーの利用・料金負担に関する注意事項</h2>
+        <p>
+          本サービスでは、AIおよび音声合成機能の利用にあたり、ユーザーご自身のAPIキーの入力が必要となる場合があります。入力されたAPIキーは処理時の通信にのみ使用され、恒久的に保存しない方針ですが、各AIプロバイダーまたは音声プロバイダーにおける利用料金、従量課金、無料枠、レート制限、利用停止等は、各提供元の利用条件に従います。これらのAPI利用に伴って発生する料金その他の負担は、すべてユーザーご自身の責任となります。ご利用前に、各プロバイダーの料金体系・利用規約・制限事項をご確認ください。
+        </p>
+        <p>
+          なお、APIキーの漏洩・不正利用によって生じた損害について、運営者は一切の責任を負いません。利用後はAPIキーのローテーション（再発行）を推奨します。
+        </p>
+
+        <h2>4. ボイスクローン・音声利用に関する注意事項</h2>
+        <p>
+          ボイスクローン機能または音声サンプルを利用する場合は、ユーザーご本人の声、または権利者本人から明示的な許諾を得た音声のみをご使用ください。他人の声、有名人、声優、配信者、第三者の録音音声等を、無断で模倣、複製、生成、配信、公開することは、法令違反や権利侵害となる可能性があります。音声の利用、同意取得、権利処理、人格権・パブリシティ権・名誉毀損その他の問題については、ユーザーご自身の責任で対応してください。
+        </p>
+
+        <h2>5. YouTube転送・公開設定に関する注意事項</h2>
+        <p>
+          本サービスでは、ユーザーが明示的に選択した場合に限り、Google OAuth を利用して生成動画をユーザーご本人のYouTubeアカウントへ転送する機能を提供します。転送された動画は初期状態では非公開として保存されますが、その後の公開設定、限定公開設定、削除、説明文編集、著作権対応、収益化可否、視聴制限、YouTube上での各種ポリシー対応は、ユーザーご自身の責任で行っていただく必要があります。YouTubeにアップロードするコンテンツについては、YouTubeの利用規約、コミュニティガイドライン、著作権ポリシー等を遵守してください。
+        </p>
+
+        <h2>6. データ保存・自動削除・障害時の取扱いに関する注意事項</h2>
+        <p>
+          アップロードされたPDFファイル、生成された音声ファイル、生成された動画ファイル等は、サービス提供のため一時的にサーバー上で処理・保存されます。これらのデータは通常、ジョブ作成後おおむね30分以内を目安に自動削除されますが、通信障害、システム障害、保守作業、処理遅延その他の事情により、削除が遅れる場合があります。機密情報、個人情報、社外秘資料、未公開情報等を含むコンテンツを利用する場合は、必要に応じて匿名化、マスキング、事前承認等の措置を講じたうえで、ユーザーご自身の責任でご判断ください。
+        </p>
+
+        <h2>7. 処理時間・サービス可用性に関する注意事項</h2>
+        <p>
+          動画生成処理には通常3〜15分程度かかります。スライド枚数・AIプロバイダーの混雑状況・サーバー負荷によっては、これ以上の時間を要する場合があります。処理中にブラウザを閉じた場合、生成が正常に完了しない場合があります。本サービスは予告なくメンテナンス・機能変更・停止を行う場合があります。重要な締め切りや本番利用がある場合は、十分な余裕をもってご利用ください。サービスの停止・遅延・障害によって生じた損害について、運営者は一切の責任を負いません。
+        </p>
+
+        <h2>8. 商用利用・二次利用に関する注意事項</h2>
+        <p>
+          本サービスで生成した動画の商用利用は可能ですが、以下の点にご注意ください。
+        </p>
+        <ul>
+          <li>使用したAIプロバイダー（Google Gemini・OpenAI・OpenRouter等）の利用規約において、商用利用に制限が設けられている場合があります</li>
+          <li>使用した音声合成エンジン（ElevenLabs・Azure Speech・Google Cloud TTS等）によっては、商用利用に追加ライセンスまたは有料プランへの加入が必要な場合があります</li>
+          <li>生成動画を第三者に販売・再配布・放送する場合は、各プロバイダーの利用規約を事前にご確認ください</li>
+          <li>生成コンテンツに含まれるAI生成音声・テキストの著作権帰属については、各プロバイダーの規約に従います</li>
         </ul>
 
-        <h2>8. データの保持と削除 / Data Retention and Deletion</h2>
+        <h2>9. 禁止事項</h2>
+        <p>以下の目的・用途での本サービスの利用を禁止します。</p>
+        <ul>
+          <li>他者を誹謗中傷・差別・脅迫する動画の生成</li>
+          <li>虚偽情報・フェイクニュースの拡散を目的とした動画の生成</li>
+          <li>特定の人物・団体を装ったなりすまし動画の生成</li>
+          <li>選挙・政治活動における虚偽宣伝を目的とした動画の生成</li>
+          <li>児童・青少年に有害なコンテンツの生成</li>
+          <li>本サービスへの不正アクセス・過負荷・スクレイピング</li>
+          <li>APIキーの不正取得・共有・転売を目的とした利用</li>
+          <li>日本国内外の法令に違反する目的での利用</li>
+        </ul>
+        <p>上記禁止事項に違反した場合、予告なくサービスの利用を停止する場合があります。</p>
+
+        <h2>10. 未成年者の利用に関する注意事項</h2>
         <p>
-          アップロードされたPDFファイル、生成された音声・動画ファイルは一時的にサーバーに保存されますが、生成完了後30分以内に自動削除されます。ただし、通信障害やシステム障害により削除が遅延する場合があります。
-        </p>
-        <p>
-          Uploaded PDF files and generated audio/video files are temporarily stored on the server but are automatically deleted within 30 minutes after generation. Deletion may be delayed due to communication or system failures.
+          本サービスは主に18歳以上の方を対象としています。18歳未満の方が本サービスを利用する場合は、保護者または法定代理人の同意を得たうえでご利用ください。未成年者の利用によって生じたいかなる問題についても、運営者は責任を負いません。
         </p>
 
-        <h2>9.  / Disclaimer</h2>
+        <h2>11. 準拠法・管轄裁判所</h2>
         <p>
-          本サービスの利用により生じたいかなる損害（APIキーの不正利用、著作権侵害、生成コンテンツによる損害等を含むがこれに限定されない）についても、本サービスの運営者は一切の責任を負いません。
-        </p>
-        <p>
-          The operator of the Service accepts no liability for any damages arising from use of the Service, including but not limited to unauthorized use of API keys, copyright infringement, or damages caused by generated content.
+          本利用規約は日本法に準拠します。本サービスに関する紛争については、運営者の所在地を管轄する裁判所を第一審の専属的合意管轄裁判所とします。
         </p>
 
-        <h2>10. 規約の変更 / Changes to Terms</h2>
-        <p>
-          本規約は予告なく変更される場合があります。変更後の規約は本ページに掲載された時点で効力を生じます。
-        </p>
-        <p>
-          These terms may be changed without notice. Updated terms take effect when posted on this page.
-        </p>
       </main>
 
       <footer className="py-4 text-center text-sm text-muted-foreground border-t border-border space-y-1">
         <div>
           <Link href="/" className="text-blue-600 hover:underline">← トップに戻る / Back to Top</Link>
           <span className="mx-2">|</span>
-          <Link href="/privacy/" className="text-blue-600 hover:underline">プライバシーポリシー / Privacy Policy</Link>
+          <Link href="/privacy" className="text-blue-600 hover:underline">プライバシーポリシー / Privacy Policy</Link>
         </div>
       </footer>
     </div>
